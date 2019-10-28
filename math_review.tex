@@ -2,9 +2,145 @@
 
 \begin{document}
 \chapter{Math Review}
-In this chapter, we will briefly review several aspects of linear algebra, norm, etc.
 
-\begin{equation}
-\eta
-\end{equation}
+In this chapter, we will briefly review several aspects of linear algebra, norm, etc. The following notations will be used throughout the course.
+
+\begin{itemize}
+	\item $M$: Matrix (size $\R^{m \times n}$).
+	\item $M^T$: Transpose Matrix of $M$.
+	\item $\xb$: Vector (size $\R^n$).
+	\item $\xb_i$: $i$-th element of vector $\xb$ (size $\R$).
+\end{itemize}
+
+\section{Positive Semidefinite and Positive Definite Matrices}
+We will first define Positive semidefinite (PSD) and positive definite matrices.
+
+\begin{definition}[\bfseries Positive Semidefinite Matrix]
+	
+	A matrix $M\in \R^{n\times n}$ is said to be positive semidefinite (PSD) if it satisfies the following two conditions.
+	
+	\begin{enumerate}
+		\item $M$ is a symmetric matrix. That is $M^T = M$.
+		\item For all $\xb \in \R^n$, we have that $\xb^T M \xb \geq 0$. This condition is equivalent to all eigenvalues of $M$ being non-negative.
+	\end{enumerate}
+
+	We can denote matrix $M$ being positive semidefinite (PSD) as $M \succeq 0$.
+\end{definition}
+
+\begin{definition}[\bfseries Positive Definite Matrix]
+	Similar to above definition, a matrix $M$ is said to be positive definite (PD) if it satisfies the following two conditions:
+	
+	\begin{enumerate}
+		\item $M$ is a symmetric matrix. That is $M^T = M$.
+		\item For all $\xb \in \R^n$, we have that $\xb^T M \xb > 0$. This condition is equivalent to all eigenvalues of $M$ being positive.
+	\end{enumerate}
+
+	We can denote matrix $M$ being positive definite (PD) as $M \succ 0$.
+\end{definition}
+
+Notice that the only difference between positive semidefinite matrices and positive definite matrices is whether the eigenvalues could be zero. In addition, all PD matrices are PSD, while PSD matrices may not be PD.
+
+\begin{notation}
+	We denote $M \preceq 0$ if $-M \succeq 0$ and $M \prec 0$ if $-M \succ 0$.
+\end{notation}
+
+
+\section{Norm}
+
+\begin{definition}[\bfseries Norm]
+	Norm is defined as a function $||\cdot||: \R^n \to [0, \infty]$ which satisfies the following conditions:
+	
+	\begin{enumerate}
+		\item \textbf{Identity of Indiscernibles}: $||\xb|| = 0$ if and only if $\xb = 0$.
+		\item \textbf{Absolute Homogeneity}: $||\alpha \xb|| = |\alpha| ||\xb||$ for all $\xb \in \R^n$ and $\alpha \in \R$.
+		\item \textbf{Triangle Inequality}: $||\xb + \yb|| \leq ||\xb|| + ||\yb||$ for all $\xb, \yb \in \R^n$.  
+	\end{enumerate} 
+\end{definition}
+
+Some famous norm functions can be seen following:
+
+\begin{enumerate}
+	\item $\lb_1$ norm: $||\xb||_1 = \sum_{i=1}^{n} |\xb_i|$.
+	\item $\lb_2$ norm: $||\xb||_2 = \sqrt[2]{\sum_{i=1}^n \xb_i^2}$.
+	\item $\lb_{\infty}$ norm: $||\xb||_{\infty} = \max\limits_{1 \leq i \leq n} |\xb_i|$.
+	\item $\lb_p$ norm: $||\xb||_p = \sqrt[p]{\sum_{i=1}^n |\xb_i|^p}$
+	\item $M$ norm (suppose $M \in \R^{n\times n}$): $||\xb||_M = \sqrt[2]{\xb^T M \xb}$.
+\end{enumerate}
+
+We can see that $\lb_1$, $\lb_2$ and $\lb_{\infty}$ are special case of $\lb_p$ norm.
+
+We will next prove that $\lb_{\infty}$ norm satisfies the three condition in norm definition.
+
+\begin{proof} 
+	We will just use the norm definition to finish the proof.
+	\begin{enumerate}
+		\item \textbf{Identity of Indiscernibles}: 
+		
+		Since $||\xb||_\infty = \max\limits_{1 \leq i \leq n} |\xb_i|$. $||\xb||_\infty = 0 $ if and only if $\xb_i = 0$ for all $i \in [1, n]$.
+		\item \textbf{Absolute Homogeneity}: 
+		
+		$||\alpha \xb||_\infty = \max\limits_{1 \leq i \leq n}  |\alpha \xb_i| = |\alpha| \max\limits_{1 \leq i \leq n}  |\xb_i| = |\alpha| ||\xb||_\infty$.
+		\item \textbf{Triangle Inequality}: 
+		
+		$||\xb + \yb||_\infty = \max\limits_{1 \leq i \leq n}  |\xb_i + \yb_i|  \leq \max\limits_{1 \leq i \leq n} ( |\xb_i| + |\yb_i|)  \leq \max\limits_{1 \leq i \leq n}  |\xb_i| +\max\limits_{1 \leq j \leq n}  |\yb_j| = ||\xb||_\infty + ||\yb||_\infty$.
+	\end{enumerate}
+\end{proof}
+
+\begin{definition}[\bfseries Dual Norm]
+	Given a norm $||\cdot||$, we can define its dual norm $||\cdot||_{*}$as following:
+	
+	\begin{equation}
+		||\yb||_* = \sup\limits_{\xb \in \R^n, ||\xb|| = 1} \langle \xb, \yb \rangle
+	\end{equation}
+	
+	where $\langle, \rangle$ is the inner product of two vectors.
+\end{definition}
+
+\begin{claim}
+	The $\lb_2$ norm's dual norm is $\lb_2$ norm itself.
+\end{claim}
+
+\begin{proof}
+	For any vector $\yb \in \R^n$, we have that
+	\begin{equation*}
+	||\yb||_{2,*} = \sup\limits_{\xb \in \R^n, ||\xb||_2 = 1} \langle \xb, \yb \rangle = \sup\limits_{\xb \in \R^n} \langle \frac{\xb}{||\xb||_2}, \yb \rangle = \frac{1}{||\yb||_2} \langle \yb, \yb \rangle = ||\yb||_2. 
+	\end{equation*}
+	
+	Notice that here the inner product is maximized when two vectors ($\frac{\xb}{||\xb||_2}$ and $\yb$) take the same direction.
+\end{proof}
+
+\begin{claim}
+	The $\lb_p$ norm is dual to $\lb_q$ norm if and only if the following equation holds:
+	\begin{equation}
+	\frac{1}{p} + \frac{1}{q} = 1
+	\end{equation}
+\end{claim}
+\begin{proof}
+	TBD
+\end{proof}
+
+\begin{claim}
+	For a PD Matrix $M$, the dual norm of $M$ norm is $M^{-1}$ norm, where $M^{-1}$ is the inverse matrix of $M$.
+\end{claim}
+\begin{proof}
+	TBD
+\end{proof}
+
+\begin{theorem}[\bfseries H\"olders Inequality]
+	Suppose $||\cdot||$ and $||\cdot||_*$ are a pair of dual norms. Then for any $\xb, \yb \in \R^n$, we can have that 
+	\begin{equation}
+	\langle\xb,\yb\rangle \leq ||\xb|| ||\yb||_*.
+	\end{equation}
+\end{theorem}
+
+\begin{proof}
+	By definition, 
+	\begin{equation*}
+	||\xb|| ||\yb||_* = ||\xb|| \sup\limits_{\zb \in \R^n, ||\zb||_2 = 1}  \langle \zb, \yb \rangle \geq ||\xb|| \langle \frac{\xb}{||\xb||}, \yb \rangle =  \langle\xb, \yb \rangle.
+	\end{equation*}
+	
+	Here we use the fact that the supremum over $\zb$ must be larger or equal than taking any vector $\xb$.
+\end{proof}
+
+This theorem will be very useful in the upcoming chapters.
 \end{document}

@@ -2,4 +2,171 @@
 
 \begin{document}
 \chapter{Convex Analysis}
+
+\section{Convex Set and Convex Function}
+In this section, we will review some concepts in convex analysis.
+
+First, let us define some basic and useful notations.
+
+\begin{definition}[\bfseries Gradient]
+	Let $f: \R^n \to \R$ be a differentiable function and let $\xb \in \R^n$. We can defined the gradient of $f$ at $\xb$ as 
+	
+	\begin{equation}
+	\nabla f(\xb) = (\frac{\partial f}{\partial \xb_1} (\xb), \cdots, \frac{\partial f}{\partial \xb_n} (\xb)).
+	\end{equation}
+\end{definition}
+
+\begin{remark}
+	Notice that here we define gradient as a row vector ($\R^{1\times n}$). However, for convenience, we may abuse this notation and use it as a column vector ($\R^{n\times 1}$) in the following contents.
+\end{remark}
+\begin{definition}[\bfseries Hessian]
+	Let $f:\R^n \to \R$ be a twice differentiable function and let $\xb \in \R^n$. Then the Hessian of $f$ at $\xb$ is defined as
+	
+	\begin{equation}
+	\nabla^2 f(\xb) = 
+	\begin{pmatrix} 
+	\frac{\partial ^2 f}{\partial x_1^2} (\xb) & \cdots  & \frac{\partial ^2 f}{\partial x_1 \partial x_n} (\xb) \\
+	\vdots & \ddots & \vdots \\
+	\frac{\partial ^2 f}{\partial x_n \partial x_1} (\xb) & \cdots  & \frac{\partial ^2 f}{ \partial x_n^2} (\xb).
+	\end{pmatrix}
+	\end{equation}
+	
+\end{definition}
+
+Notice that if $f$ is a twice differentiable function and $\xb \in \R^n$, then $\nabla^2 f(\xb)$ is a symmetric matrix since for all $i, j \in [1, n]$, it has
+
+\begin{equation*}
+	\frac{\partial ^2 f}{\partial x_i \partial x_j} (\xb) = \frac{\partial ^2 f}{\partial x_j \partial x_i} (\xb).
+\end{equation*}
+
+Next, we will talk about convexity, its definition and several useful facts.
+
+\begin{definition}[\bfseries Convex Set]
+	Let $\K \subset \R^n$, set $\K$ is called a convex set if  $\ \forall \xb,\yb \in \K$ and $\forall t \in [0,1]$, we have
+	
+	\begin{equation}
+		t\xb + (1-t)\yb \in \K.
+	\end{equation}
+	
+	The meaning of this definition is that for any two arbitrary points in the set $\K$, the straight line between these two points are all contained in $\K$.
+\end{definition}
+
+\begin{definition}[\bfseries Convex Function]
+	Let $\K \subset \R^n$ be a convex set and $f: \K \to \R^n$ be a differentiable function. Then function $f$ is convex if $\forall \xb,\yb \in \K$ and $\forall t\in [0, 1]$, we have that
+	
+	\begin{equation}
+	f((1-t)\xb + t \yb) \leq (1-t) f(\xb)+ t f(\yb). \label{convex_f_1}
+	\end{equation}
+\end{definition}
+
+
+\begin{claim}
+	Let $\K \subset \R^n$ be a convex set and $f: \K \to \R^n$ be a differentiable function. Then function $f$ is convex if and only if $\forall \xb,\yb \in \K$, we have that
+	
+	\begin{equation}
+		f(\xb) \geq f(\yb) + \langle f(\yb) , \xb - \yb \rangle. \label{convex_f_2}
+	\end{equation}
+\end{claim}
+
+An intuition behind this claim is that $f$ is convex if and only if the first order approximation of $f$ at any point $\yb$ is not larger than the function itself.
+\begin{claim}
+	Let $\K \subset \R^n$ be a convex set and $f: \K \to \R$ be a twice differentiable function. Then $f$ is convex if and only if  $\forall \xb \in \K$, 
+	
+	\begin{equation}
+		\nabla^2 f(\xb) \succeq 0. \label{convex_f_3}
+	\end{equation}
+\end{claim}
+
+\begin{remark}
+	 It can be seen that above three formulas \eqref{convex_f_1}, \eqref{convex_f_2} and \eqref{convex_f_3} are equivalent. However, in reality, if $f$ is twice differentiable, using \eqref{convex_f_3} is much simpler than using \eqref{convex_f_1} or \eqref{convex_f_2}, because it only contains one variable in $\K$ and we only need to determine if $\nabla^2f(\xb)$ is PSD or not.
+	 
+	   In facts, many functions satisfy this condition. Some examples are $f(\xb) = \xb^T \xb$, $f(\xb) = 1$, etc.
+\end{remark}
+
+
+\begin{proposition} $\quad$ 
+	\begin{enumerate}
+		\item If $f$ is convex and $g$ is convex, then $f + g$ is convex.
+		\item If $f$ is convex, then $\forall \alpha \geq 0 $, $\alpha f$ is convex.
+		\item If $f$ is convex and $g$ is convex, then $\max\{f,g\}$ is convex.
+		\item If $g(\xb, \yb)$ is jointly convex is $\xb$, $\yb$, then $f(\xb) = \inf\limits_{\yb} g(\xb, \yb)$ is convex.
+	\end{enumerate}
+\end{proposition}
+
+\begin{definition}[\bfseries Concave Function]
+	Let $\K \subset  \R^n $ be a convex set and $f:\K \to \R$, then $f$ is concave is $-f$ is convex.
+\end{definition}
+
+We can see that one example of concave function is $log$ function.
+
+
+\begin{definition}[Lipschitz]
+	Let $||\cdot||$ be a norm, $c \geq 0$ and $f:\R^n \to \R$. Then $f$ is called $c-Lipschitz$ with respect to $||\cdot||$ if $\forall \xb, \yb \in \R^n$, 
+	
+	\begin{equation}
+		|f(\xb) - f(\yb)| \leq c||\xb - \yb||.
+	\end{equation}
+	
+	Intuitively, it means that the difference between function value is smaller than the difference between the norm of difference between two points times some constant c.
+\end{definition}
+
+\begin{claim}
+	If $f$ is a differentiable function, then $f$ is $c$-$Lipschitz$ with respect to $||\cdot||$ if and only if $\forall \xb \in \R^n$,
+		\begin{equation}
+	||f(\xb)||_* \leq c
+	\end{equation}
+	where $||\cdot||_*$ is the dual norm of $||\cdot||$.
+\end{claim}
+\begin{proof}
+	We first prove the 'if' part.
+	
+	Let $||\cdot||$ be a norm on $\R^n$ and $c \geq 0$, let $||\nabla f(\xb)||_* \leq c $ $\forall \xb \in \R^n$. Then, by the mean value theorem, $\forall \xb, \yb \in\R^n$, there exists $t\in [0,1]$ such that 
+	\begin{equation*}
+		f(\xb) = f(\yb) + \langle \nabla f((1-t) \xb + t \yb) , \xb - \yb \rangle.
+	\end{equation*}
+	
+	Then, by H\"older's inequality, 
+	
+	\begin{equation*}
+		\begin{aligned}
+				|f(\xb) - f(\yb)| & = |\langle \nabla f((1-t) \xb + t \yb) , \xb - \yb \rangle| \\
+								  & \leq ||\nabla f((1-t) \xb + t \yb)||_* ||\xb - \yb|| \\
+								  & \leq c ||\xb - \yb||.
+		\end{aligned}
+	\end{equation*}
+	That is, f is $c$-$Lipschitz$ with respect to $||\cdot||$.
+	
+	We will next prove the 'only if' part.
+	
+	Suppose that $f$ is $c$-$Lipschitz$ with respect to $||\cdot||$ and let $\xb, \yb \in \R^n$, then we have 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\langle \nabla f(\xb) , \yb \rangle &= \lim\limits_{h \to 0} \frac{f(\xb + h\yb) - f(\yb)}{h} \\
+												&\leq \lim\limits_{h \to 0} \frac{c||\xb + h\yb - \xb||}{h} \\
+												& = c \lim\limits_{h \to 0} \frac{h||\yb||}{h} \\
+												& = c||\yb||.
+		\end{aligned}
+	\end{equation*}
+	
+	Notice that $\langle \nabla f(\xb) , \yb \rangle$ is the directional derivative of $f$ at $\xb$ in the direction of $\yb$. Then,
+	
+	\begin{equation*}
+		||\nabla f(\xb)||_* = \sup\limits_{||\yb||\leq 1} \langle \nabla f(\xb) , \yb \rangle \leq \sup\limits_{||\yb||\leq 1}  c||\yb|| = c.
+	\end{equation*}
+	
+	Therefore, $\forall \xb \in \R^n$, $||\nabla f(\xb)|| \leq c$.
+\end{proof}
+
+
+\begin{theorem}[\bfseries Jensen's Inequality]
+	content...
+\end{theorem}
+
+\begin{theorem}[\bfseries Young's Inequality]
+	content...
+\end{theorem}
+
+\section{Bregman Divergence}
+
 \end{document}

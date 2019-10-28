@@ -1,13 +1,87 @@
 \documentclass{report}
 \usepackage{subfiles}
+\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb, amsmath, graphicx, subfigure, enumerate}
+\usepackage{amsthm,alltt} 
+\usepackage[margin=1.25in]{geometry} %geometry (sets margin) and other useful packages
+\usepackage{graphicx,ctable,booktabs}
+\usepackage{mathtools}
+\usepackage{fancyhdr} %Fancy-header package to modify header/page numbering
+\usepackage{cleveref}
+\usepackage{algorithmic, algorithm}
+\usepackage[normalem]{ulem}
+\setlength\parindent{0pt}
+\setlength\parskip{5pt}
+\def\alg{\mathcal{A}}
+\def\R{\mathbb{R}}
+\def\K{\mathcal{K}}
+\def\x{\mathbf{x}}
+\def\y{\mathbf{y}}
+\def\z{\mathbf{z}}
+\def\p{\mathbf{p}}
+\def\EE{\mathbb{E}}
+\def\PP{\mathbb{P}}
 
-\title{\fontsize{50}{60} \selectfont \textbf{CS 7545}}
-\author{\textbf{Taught by Professor Jacob Abernethy}}
+\def\lb{\boldsymbol{\ell}}
+\def\pb{\mathbf{p}}
+\def\qb{\mathbf{q}}
+\def\eb{\mathbf{e}}
+\def\xb{\mathbf{x}}
+\def\yb{\mathbf{y}}
+\def\zb{\mathbf{z}}
+\def\ab{\mathbf{a}}
+
+
+	
+
+\renewcommand{\cite}[1]{[#1]}
+\def\beginrefs{\begin{list}
+		{[\arabic{equation}]}{\usecounter{equation}
+			\setlength{\leftmargin}{2.0truecm}\setlength{\labelsep}{0.4truecm}%
+			\setlength{\labelwidth}{1.6truecm}}}
+	\def\endrefs{\end{list}}
+\def\bibentry#1{\item[\hbox{[#1]}]}
+
+\newcommand{\challenge}[2]{\noindent \textbf{(Challenge Problem)} \emph{#1}: #2 }
+
+\newcommand{\exercise}[1]{\noindent \textbf{(Exercise)} #1 }
+
+\newcommand{\fig}[3]{
+	\vspace{#2}
+	\begin{center}
+		Figure \thelecnum.#1:~#3
+	\end{center}
+}
+%%% END_OF_PREAMBLE %%%
+
+
+
+%%%%You may add more \newtheorem if necessary%%%%%%
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{notation}[theorem]{Notation}
+\setcounter{secnumdepth}{5} 
+
+
+\newcommand{\dom}{\mathrm{dom}}
+\title{\fontsize{50}{60} \selectfont \textbf{CS 7545\\ Machine Learning Theory}}
+\author{\textbf{Professor Jacob Abernethy}}
 \date{\textbf{Organized by Yiwen Chen}}
 \begin{document}
 \maketitle
 \tableofcontents
+\subfile{preface.tex}
 \subfile{math_review.tex}
 \subfile{convex_analysis.tex}
 \subfile{deviation_bound.tex}
+\subfile{online_learning.tex}
+\subfile{game_theory.tex}
+\subfile{boosting.tex}
+\subfile{online_convex_optimization.tex}
 \end{document}
