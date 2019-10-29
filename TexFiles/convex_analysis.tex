@@ -1,4 +1,4 @@
-\documentclass[main.tex]{subfiles}
+\documentclass[../main.tex]{subfiles}
 
 \begin{document}
 \chapter{Convex Analysis}
@@ -160,13 +160,53 @@ We can see that one example of concave function is $log$ function.
 
 
 \begin{theorem}[\bfseries Jensen's Inequality]
-	content...
+	Let $\K \in \R^n$ be a convex set, $X$ be a random variable on $\K$ and $f:\K \to \R$ be a convex function, then
+	\begin{equation}
+		f(\EE[X]) \leq \EE[f(X)]
+	\end{equation}
+	
+	where $\EE$ denotes the expectation of a random variable.
 \end{theorem}
 
 \begin{theorem}[\bfseries Young's Inequality]
-	content...
+	Let $p, q > 0$ and satisfy that $\frac{1}{p} + \frac{1}{q} = 1$. Then $\forall a, b > 0$,
+	\begin{equation}
+		ab \leq \frac{a^p}{p} + \frac{b^q}{q}.
+	\end{equation}
 \end{theorem}
 
+\begin{proof}
+	Since $-\log$ is a convex function, then $\forall a, b > 0$,
+	
+	\begin{equation*}
+		\begin{aligned}
+			\log(ab) & =\log(a) + \log(b) \\
+					 & = \frac{p}{p} \log (a) + \frac{q}{q}\log (b)\\
+					 & = \frac{1}{p} \log(a^p) + \frac{1}{q} \log(b^q) \\
+					 & \leq \log (\frac{a^p}{p} + \frac{b^q}{q} ).
+		\end{aligned}
+	\end{equation*}
+	
+	Then apply $\exp$ to both side and since $\exp$ function is monotonically increasing, we can have that 
+	
+	\begin{equation*}
+	ab \leq \frac{a^p}{p} + \frac{b^q}{q}.
+	\end{equation*}
+\end{proof}
+
+
+\begin{definition}[\bfseries Strongly Convex]
+	Let $\K$ be a convex set, $f: \K \to \R$ be a differentiable function and $\alpha > 0$. Then $f$ os $\alpha$-strongly convex with respect to $||\cdot||$ if $\forall \xb, \yb \in \K$, 
+	\begin{equation}
+		f(\xb) \geq f(\yb) + \langle \nabla f(\yb), \xb - \yb \rangle + \frac{\alpha}{2} ||\xb - \yb||^2.
+	\end{equation}
+\end{definition}
+
+Notice that if $f$ is strongly convex, then it must be a convex function. In addition, a strongly convex function grows at least quadratically. 
+
+\begin{claim}
+	
+\end{claim}
 \section{Bregman Divergence}
 
 \end{document}
