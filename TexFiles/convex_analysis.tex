@@ -204,9 +204,165 @@ We can see that one example of concave function is $log$ function.
 
 Notice that if $f$ is strongly convex, then it must be a convex function. In addition, a strongly convex function grows at least quadratically. 
 
-\begin{claim}
-	
+\begin{claim}\label{strongly-convex-lemma}
+	Let $f$: dom($f$) $\to \R$ be a twice differentiable function, then $f$ is $\alpha$-strongly convex if and only if  $\forall \xb \in \textmd{dom}(f)$,
+		\begin{equation*}
+			\nabla^2 f(\xb) - \alpha I \succeq 0.
+		\end{equation*}
 \end{claim}
-\section{Bregman Divergence}
 
+\begin{definition}[\bfseries Smooth]
+	Let $f$: dom($f$) $\to \R$ be a differentiable function, let $\alpha >0$, then $f$ is $\alpha$-smooth if $\forall \xb, \yb \in $ dom($f$), 
+	\begin{equation*}
+		f(\xb) \leq f(\yb) + \langle \nabla f(\yb), \xb - \yb \rangle + \frac{\alpha}{2} ||\xb - \yb||^2.
+	\end{equation*}
+\end{definition}
+
+Notice that in contrast to strongly convex, a smooth function grows \textbf{at most} quadratically.
+
+\begin{claim}\label{smooth-lemma}
+	We have a similar claim for smooth function to strongly convex function. That is, let $f$: dom($f$) $\to \R$ be a twice differentiable function, then $f$ is $\alpha$-smooth if and only if $\forall \xb \in \textmd{dom}(f)$, we have
+	\begin{equation*}
+		\nabla^2 f(\xb) - \alpha I \preceq 0.
+	\end{equation*}
+\end{claim}
+
+Notice that although smooth seems to be contrary to strongly convex, a function $f$ can be both $\alpha$-strongly convex and $\beta$-smooth for some $\alpha$ and $\beta$. We will give an example next.
+
+\begin{example}
+	Let $M \in \R^{n\times n}$ be a positive definite matrix and let $f(\xb) = \frac{1}{2} \xb^T M \xb$. Denote $\lambda_{min}$ as the smallest eigenvalue of $M$ and $\lambda_{max}$ as the largest eigenvalue of $M$. Then we can prove easily that $M$ is $\lambda_{min}$-strongly convex and $\lambda_{max}$-smooth.
+\end{example}
+
+\begin{proof}
+	
+	First, by taking derivative, it can be seen that $\nabla f(\xb) = \xb^T M$. Then, take the second derivative and we can get $\nabla^2 f(\xb) = M$. By Claim \ref{smooth-lemma} and Claim \ref{strongly-convex-lemma}, we can show that $f$ is $\lambda_{min}$-strongly convex and $\lambda_{max}$-smooth.
+\end{proof}
+
+\section{Bregman Divergence}
+In this section, we will define Bregman Divergence and see its relation with convexity analysis.
+
+\begin{definition}
+	Given a function $f$: $\U \to \R$, we can define its Bregman Divergence as
+	\begin{equation}
+		D_f(\xb, \yb) := f(\xb) - f(\yb) - \langle \nabla f(\yb), \xb - \yb \rangle.
+	\end{equation}
+\end{definition}
+
+\begin{example}
+		Let $f(\xb) = \frac{1}{2} ||\xb||_2^2$, then
+		\begin{equation*}
+		D_f(\xb, \yb) = \frac{1}{2} ||\xb - \yb||_2^2.
+		\end{equation*}
+		Notice that only in this situation is Bregman divergence a quadratic function.
+\end{example}
+
+\begin{example}
+	Let $\Delta^n = \{\p \in \R^n| \sum_{i=1}^n p_i = 1, p_i \geq 0\}$ be the simplex with dimension n. Let $f(\p) = \sum_{i=1}^n p_i\log p_i$ be the entropy function and suppose $f(0) = 0$. Then
+	\begin{equation*}
+	D_f(\p,\qb) = \sum\limits_{i=1}^n p_i\log \frac{p_i}{q_i} = \textmd{KL}(\pb || \qb),
+	\end{equation*}
+	
+	where KL is Kullback-Leibler divergence.
+\end{example}
+
+We will next talk about some facts about Bregman divergence.
+
+\begin{fact} $ $
+	\begin{enumerate}
+		\item If $f$ is convex, then $D_f (\xb, \yb) = 0$ if and only if $\xb=\yb$.
+		\item $f$ is $\mu$-strongly convex if and only if $D_f(\xb, \yb) \geq \frac{\mu}{2} ||\xb-\yb||^2$.
+		\item $f$ is $\beta$-smooth if and only if $D_f(\xb, \yb) \leq \frac{\beta}{2} ||\xb - \yb||^2$
+		\item If $D_f(\xb, \yb) = D_f(\yb, \xb)$, then $f$ is quadratic.
+		\item Pinsker's Inequality: $KL(\p, \qb) \geq \frac{1}{2} ||\p - \qb||_1^2$. It means that entropy function is $1$-strongly convex in $||\cdot||_1$.
+	\end{enumerate}
+\end{fact}
+
+\begin{definition}[\bfseries Fenchel Dual Conjugate]
+	Let $f$ be convex, the Fenchel dual conjugate of $f$ is defined as
+	\begin{equation}
+		f^*(\theta) = \sup\limits_{\xb\in \textmd{dom}(f)} \left[ \langle \xb, \theta \rangle - f(\xb)\right].
+	\end{equation}
+\end{definition}
+
+\begin{claim}
+	$f^*(\theta)$ is convex.
+\end{claim}
+
+\begin{proof}
+	It can be seen that $ g_\xb(\theta) = \langle \xb, \theta \rangle - f(\xb)$ is a linear function. Linear function is convex. In addition, $f^*(\theta) = \sup\limits_{\xb\in \textmd{dom}(f)} g_\xb(\theta)$ is the supreme of convex function, which means that $f$ is also convex.  
+\end{proof}
+
+\begin{example}
+	If $f(\xb) = \frac{1}{2} ||\xb||_2^2$, then $f^*(\theta) = \frac{1}{2} ||\theta||_2^2$.
+\end{example}
+
+\begin{example}
+	If $f(\xb) = \frac{1}{2}\x^T M \x$ and $M$ is a positive definite matrix, 
+	
+	\begin{equation*}
+	f^*(\theta) = \sup\limits_{\xb\in \textmd{dom}(f)} \left[ \langle \xb, \theta \rangle -  \frac{1}{2}\x^T M \x \right].
+	\end{equation*}
+	
+	Let $g(\x) =\langle \xb, \theta \rangle -  \frac{1}{2}\x^T M \x $. Take the derivative over $\x$ and we can get that
+	\begin{equation*}
+	\begin{aligned}
+		&	\nabla_\x g(\x) = 0\\
+	\Leftrightarrow\ & \theta - M \x = 0\\
+	\Leftrightarrow\ & \x = M^{-1} \theta. 
+	\end{aligned}
+	\end{equation*}
+	
+	Substitute the value of $\x$ into $f^*(\theta)$ and we can get that 
+	\begin{equation*}
+		\begin{aligned}
+				f^*(\theta) &= \theta^T M^{-1}\theta - \frac{1}{2} (M^{-1}\theta)^T M M^{-1}\theta\\
+							&= \frac{1}{2} \theta^T M^{-1} \theta.
+		\end{aligned}
+	\end{equation*}
+\end{example}
+
+\begin{example}
+	Let $f(x) = \frac{1}{p} ||\x||_p^p = \frac{1}{p} \sum\limits_{i=1}^n x_i^p$, then
+	\begin{equation*}
+		f^*(\theta) = \frac{1}{q} ||\theta||_q^q,
+	\end{equation*}
+	where $\frac{1}{p} + \frac{1}{q} = 1$.
+\end{example}
+
+There is one famous inequality for Fenchel dual conjugate called Fenchel-Yang Inequality.
+
+\begin{theorem}[Fenchel-Yang Inequality]
+	$\forall \x \in \textmd{dom}(f)$ and $\forall \theta \in \textmd{dom}(f^*)$, it holds that 
+	\begin{equation}
+	f(\x) + f^*(\x) \geq \langle \x, \theta \rangle.
+	\end{equation}
+\end{theorem}
+
+\begin{proof}
+	By the definition of Fenchel dual conjugate, $\forall \x$ and $\theta$,
+	\begin{equation*}
+	\begin{aligned}
+		f^*(\theta) + f(\x) & = \sup_\y \left[ \langle \y, \theta \rangle - f(\y)\right] +f(\x) \\
+		&\geq  \langle \x, \theta \rangle - f(\x) + f(\x) \\
+		& = \langle \x, \theta \rangle.
+	\end{aligned}
+	\end{equation*}
+\end{proof}
+
+\begin{corollary}
+	By the inequality above, we can get directly that
+	\begin{equation*}
+		\frac{1}{p} ||\x||_p^p + \frac{1}{q} ||\theta||_q^q \geq \langle \x, \theta\rangle. 
+	\end{equation*}
+\end{corollary}
+
+I will next discuss some facts about Fenchel dual.
+\begin{fact}$ $
+	\begin{enumerate}
+		\item If $f$ is closed, then $(f^*)^8 = f$.
+		\item $\nabla f (\nabla f^*(\theta)) = \theta$ and $\nabla f^*(\nabla f(\x)) =\x$.
+		\item If $f$ is differentiable, then $D_f(\x,\y) = D_{f^*}(\nabla f(\y), \nabla f(\x))$.
+		\item If $f$ is $\mu$-strongly convex with respect to $||\cdot||$, then $f^*$ is $\frac{1}{\mu}$-smooth with respect to $||\cdot||_*$, where $||\cdot||_*$ is dual to $||\cdot||$.
+	\end{enumerate}
+\end{fact}
 \end{document}
