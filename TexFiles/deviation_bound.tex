@@ -5,4 +5,267 @@
 In this chapter several famous deviation bounds are mentioned. There bounds will be heavily used in later chapters.
 
 First of all, some simple definitions from measure theory will be discussed.
+
+\begin{definition}[\bfseries Random Variable]
+	A random variable $X$ is a measurable function from a sigma algebra $\Omega \to \R$.
+\end{definition}
+
+The definition of measurable function and sigma algebra is included in measure theory, which will not be discussed here.
+
+\begin{definition}[\bfseries Cumulative Distribution Function]
+	The CDF (cumulative distribution function) pf a random variable $X$ is defined as 
+	\begin{equation}
+		F(t) := \Pr(X \leq t).
+	\end{equation}
+\end{definition}
+
+\begin{definition}[\bfseries Probability Density Function]
+	If $F(t)$ is differentiable, then the PDF (probability density function) is defined as 
+	\begin{equation}
+		f(t) = F'(t).
+	\end{equation}
+\end{definition}
+
+\begin{definition}[\bfseries Variance]
+	The variance of a random variable $X$ is defined as 
+	\begin{equation}
+	Var(X) = \EE[(X - \mu)]^2,
+	\end{equation}
+	
+	where $\mu = \EE(X)$ is the expectation of $X$.
+\end{definition}
+
+After the above definitions, we will next introduction some useful deviation bounds.
+
+\begin{theorem}[\bfseries Markov's Inequality]
+	Let $X$ be a random variable and $X \geq 0$, then $\forall t \geq 0$, we have that 
+	\begin{equation}
+		\Pr(X \geq t)\leq \frac{\EE[X]}{t}.
+	\end{equation}
+\end{theorem}
+
+\begin{proof}$ $
+	The proof of above theorem is not very complex.
+	
+	First of all, let $Z_t := \mathbf{1}(X\geq t)\cdot t$, where $\mathbf{1}(\cdot)$ is the indicator function.
+	
+	Notice that $X \geq Z_t$ for all $t$. The reason is that if $X < t$, then $Z_t = 0 \leq X$. On the contrary, if $X\geq t$, then $Z_t = t \leq X$.
+	
+	Use this, we can know that
+	\begin{equation*}
+		\begin{aligned}
+			\EE(X) & \geq \EE(Z_t) \\
+					& = \EE[\mathbf{1}(X \geq t)]\cdot t \\
+					& = \Pr(X\geq t)\cdot t 
+		\end{aligned}
+	\end{equation*}
+	
+	This directly shows that $\Pr(X \geq t)\leq \frac{\EE[X]}{t}$.
+\end{proof}
+
+Since $\Pr(X\geq t) = 1 - F(t)$, we can know from above theorem that $F(t) \geq 1 - \frac{\EE(X)}{t} $.
+
+\begin{theorem}[Chebyshev's Inequality]
+	Let $\EE(X) = \mu$ and $Var(X) = \sigma^2$, then $\Pr(|X - \mu| \geq t) \leq \frac{\sigma^2}{t^2}$.
+\end{theorem}
+
+It turns out that this theorem can be easily proved with Markov Inequality.
+\begin{proof}
+	\begin{equation*}
+		\begin{aligned}
+			\Pr(|X - \mu| \geq t) &= \Pr(|X -\mu|^2 \geq t^2) \\
+			& \leq \frac{\EE[(X-\mu)]^2}{t^2} \\
+			& = \frac{\sigma^2}{t^2}.
+		\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Next, we will define gaussian distribution (also called normal distribution).
+
+\begin{theorem}[Gaussian Distribution]
+	Let's say $X \sim N(\mu, \sigma^2)$, it means that the pdf of $X$ is 
+		\begin{equation*}
+			P(X = x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp(-\frac{(x-\mu)^2}{2\sigma^2}).
+		\end{equation*}
+\end{theorem}
+
+This distribution is heavily used in many different areas.
+
+\begin{fact}
+	If $X \sim N(0, \sigma)$, and $t > 0$, then $\EE[\exp(tX)] = \exp(\frac{t^2s^2}{2})$.
+\end{fact}
+
+This can be proved just by taking integral of this pdf function.
+
+Next, we will define subgaussian distribution, which will be used later in some inequalities.
+
+\begin{definition}[Subgaussian Distribution]
+	A random variable $X$ with $\EE(X) = 0$ is a subgaussian distribution with respect to variance proxy $\sigma^2$ if 
+	\begin{equation}
+		\EE[\exp(tX)] \leq \exp(\frac{t^2\sigma^2}{2}).
+	\end{equation}
+\end{definition}
+
+We will then give an example of subgaussian distribution.
+
+\begin{example}
+	Let $X$ be a bounded random variable, that is, $a \leq X \leq b$ and $\EE(X) = 0$. Then $X$ is subgaussian with respect to variance proxy $\frac{(b-a)^2}{4}$, which means
+	\begin{equation*}
+		\EE[\exp(tX)] \leq \exp(\frac{t^2(b-a)^2}{8}).
+	\end{equation*}
+\end{example}
+
+This is also called Hoeffiding's Lemma.
+
+\begin{claim}
+	If a random variable $X$ is subgaussian with respect to variance proxy $\sigma^2$, then 
+	\begin{equation}
+	 	P(|X|> t) \leq 2\exp(-\frac{t^2}{2\sigma^2}). 
+	\end{equation}
+\end{claim}
+
+Using subgaussian, we can introduce Hoeffding's inequality, which is extremely helpful in later material.
+
+\begin{theorem}[\bfseries Hoeffding's Inequality]
+	Let $X_1, \cdots ,X_n$ be independent random variables, with $\EE(X_i) = \mu_i$ and $a_i \leq X_i \leq b_i$. Let $\bar{X_n} = \frac{1}{n} \sum\limits_{i=1}^n X_i$ and $\mu  = \frac{1}{n}  \sum\limits_{i=1}^n \mu_i$. It holds that 
+	\begin{equation}
+		\Pr(|\bar{X_n} - \mu| > t) \leq 2 \exp(-\frac{2n^2t^2}{\sum\limits_{i=1}^n (a_i - b_i)^2}).
+	\end{equation}
+\end{theorem}
+
+We will next give the proof of this theorem.
+
+\begin{proof}
+	Notice that $\Pr(|\bar{X_n} - \mu| > t) \leq  \Pr(\bar{X_n} - \mu > t) + \Pr(\bar{X_n} - \mu < -t)$. Then, we just need to prove that $\Pr(\bar{X_n} - \mu > t) \leq \exp(-\frac{2n^2t^2}{\sum\limits_{i=1}^n (a_i - b_i)^2})$.
+	\begin{equation*}
+		\begin{aligned}		
+			\Pr(\bar{X_n} - \mu > t) & = \Pr(\exp(s(\bar{X_n} - \mu)) > \exp(st)) \\
+									(\textmd{Markov Inequality}) & \leq \frac{\EE[\exp(s(\bar{X_n} - \mu))]}{\exp(st)} \\
+																& = \exp(-st)  \EE[\exp(s(\bar{X_n} - \mu))]\\
+																& = \exp(-st)  \EE[\Pi_{i=1}^n \exp(\frac{s}{n} (X_i - \mu_i))] \\
+															(\textmd{Independence})	& = \exp(-st) \Pi_{i=1}^n \EE[ \exp(\frac{s}{n} (X_i - \mu_i))] \\
+														(X_i - \mu_i\ \textmd{Subgaussian})	& \leq  \exp(-st) \Pi_{i=1}^n \exp(\frac{s^2}{8n^2} (b_i - a_i)^2) \\
+														& = \exp(\frac{s^2}{8n^2} \sum\limits_{i=1}^n (a_i - b_i)^2 - st ) \\
+												(s\ \textmd{takes}\ \frac{4tn^2}{\sum\limits_{i=1}^n (a_i - b_i)^2})& = \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2}) 
+		\end{aligned}
+	\end{equation*}
+	Similarly, we can prove that $\Pr(\bar{X_n} - \mu < -t) \leq \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2}) $. Combine the above two conclusions and we can get that $\Pr(|\bar{X_n} - \mu| > t) \leq 2 \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2})$.
+\end{proof}
+
+Hoeffding's Inequality is very useful in proving other theorems. To see that, let's use it to prove the following claim.
+
+\begin{claim}
+	Let $X_1, \cdots, X_n$ be independent random variable and $0 \leq X_i \leq 1$, then with probability at least $1-\delta$, it holds that 
+	\begin{equation}
+		|\frac{1}{n} \sum\limits_{i=1}^n X_i - \EE[\frac{1}{n} \sum\limits_{i = 1}^n X_i]| \leq \sqrt{\frac{\log 2/\delta}{2n}}.
+	\end{equation}
+\end{claim}
+
+\begin{proof}
+	Let $\delta = 2\exp(-\frac{2n^2t^2}{\sum\limits_{i = 1}^n (a_i - b_i)^2}) = 2\exp(-2n t^2)$ since $a_i = 0$ and $b_i = 1$. Then we can get that $t = \sqrt{\frac{\log 2 / \delta}{2n}}$. By using Hoeffding's Inequality, we can get that
+	\begin{equation*}
+		\begin{aligned}
+			\Pr(|\frac{1}{n} \sum\limits_{i=1}^n X_i - \EE[\frac{1}{n} \sum\limits_{i = 1}^n X_i]| \geq \frac{\log 2/\delta}{2n}) & \leq  \delta .
+		\end{aligned}
+	\end{equation*}
+	
+	Therefore, we can get that $	\Pr(|\frac{1}{n} \sum\limits_{i=1}^n X_i - \EE[\frac{1}{n} \sum\limits_{i = 1}^n X_i]| \leq \frac{\log 2/\delta}{2n})  \geq  1 - \delta$.
+\end{proof}
+
+Afterwards, let's will introduction the concept of Martingale.
+
+\begin{definition}[\bfseries Martingale]
+	A sequence of random variables $Z_0, Z_1, \cdots, Z_n$ is a Martingale sequence if the following two conditions are satisfied for any $i$
+	\begin{enumerate}
+		\item $\EE[|Z_i|] < \infty$
+		\item $\EE[Z_i | Z_1, \cdots, Z_{i-1}] = Z_{i-1}$
+	\end{enumerate}
+\end{definition}
+
+Next let's see two examples of Martingale.
+
+\begin{example}
+	Let $X_1, \cdots, X_n$ be bounded i.i.d (independent and identically distributed) random variables, and $\EE[X_i] = 0$. Let $Z_i = \sum\limits_{j=1}^i X_j$, and set $Z_0 = 0$, then $Z_0, \cdots, Z_n$ is a martingale.
+\end{example}
+\begin{proof}
+	\begin{equation*}
+		\begin{aligned}
+		\EE[Z_i | Z_1, \cdots Z_{i-1}] & = \EE[Z_i | X_1, \cdots, X_{i-1}] \\
+		& = \EE[X_1 + \cdots + X_i | X_1, \cdots, X_{i-1}] \\
+		& = \EE[X_1 + \cdots, X_{i-1} | X_1, \cdots, X_{i-1}] + \EE[X_i | X_1, \cdots , X_{i-1}] \\
+		& = X_1 + \cdots X_{i-1} + \EE[X_i]\\
+		& = Z_{i-1} + 0 \\
+		& = Z_{i-1}.
+		\end{aligned}
+	\end{equation*}
+\end{proof}
+
+\begin{example}
+	Let $X_1, \cdots, X_n$ be i.i.d, with $\EE[X_i] = 0$ and $Var(X_i) = \sigma^2$. Let $S_i = \sum\limits_{j = 1}^i X_j$ and $Z_i = S_i^2 - i\sigma^2$. Then $Z_i$ is a martingale.
+\end{example}
+
+\begin{proof}
+	Notice that 
+		\begin{equation*}
+			\begin{aligned}
+			\EE[X_n^2] & = Var(X_n) + \EE[X_n]^2 \\ &= Var(X_n) \\ & = \sigma^2.
+			\end{aligned}
+		\end{equation*}
+		
+	In addition, 
+		\begin{equation*}
+			\begin{aligned}
+			\EE[S_{n-1} X_n | X_1, \cdots, X_{n-1}] & = \EE[X_n] \EE[S_{n-1} | X_1, \cdots, X_{n-1}] \\
+			& = 0.
+			\end{aligned}
+		\end{equation*}
+	
+	Therefore, we have that 
+		\begin{equation*}
+			\begin{aligned}
+				\EE[Z_n | X_1, \cdots , X_{n-1}] & = 	\EE[S_n^2 - n\sigma^2 | X_1, \cdots , X_{n-1}]\\
+				& = 	\EE[(X_n + S_{n-1})^2 - n\sigma^2 | X_1, \cdots , X_{n-1}] \\
+				& = 	\EE[X_n^2 + S_{n-1}^2 + 2X_nS_{n-1} - n\sigma^2 | X_1, \cdots , X_{n-1}] \\
+				& = \EE[\sigma^2 + S_{n-1}^2 - n\sigma^2 | X_1, \cdots, X_{n-1}] \\
+				& = S_{n-1}^2 - (n-1)\sigma^2 \\
+				& = Z_{n-1}.
+ 			\end{aligned}
+		\end{equation*}
+\end{proof}
+
+Finally, we come to the last inequality of this chapter, which combines Hoeffding's Lemma and definition of Martingale. 
+\begin{theorem}[\bfseries Azuma's Inequality]
+	Let $Z_0, Z_1, \cdots, Z_n$ be a martingale, with $|Z_i - Z_{i-1}| \leq c_i$ for some $c_1, \cdots, c_n$. Then we have that
+	\begin{equation}
+	\Pr(Z_n - Z_0 > t) \leq \exp(-\frac{t^2}{2 \sum\limits_{i = 1}^n c_i^2}).
+	\end{equation}
+\end{theorem}
+
+\begin{proof}
+	\begin{equation*}
+		\begin{aligned}
+			\Pr(Z_n - Z_0 > t) &= \Pr(\exp(s(Z_n - Z_0)) > \exp(st)) \\
+			& \leq \EE[\exp(s(Z_n - Z_0))] \exp(-st) \\
+			& = \exp(-st)  \EE[\exp(s(Z_{n-1} - Z_{0}))\exp(s(Z_n - Z_{n-1}))] \\
+			& = \exp(-st)  \EE[\EE[\exp(s(Z_{n-1} - Z_{0}))\exp(s(Z_n - Z_{n-1}))] | Z_0, \cdots ,Z_{n-1}] \\
+			& = \exp(-st) \EE[\exp(s(Z_{n-1} - Z_{0})) \EE[\EE[\exp(s(Z_n - Z_{n-1}))] | Z_0, \cdots ,Z_{n-1}] 
+		\end{aligned}
+	\end{equation*}
+	
+	Since $|Z_n - Z_{n-1}| \leq c_n$, we can get that $Z_n - Z_{n-1} \in [-c_n, c_n]$. In addition, we know that $\EE[Z_n - Z_{n-1} | Z_0, \cdots, Z_{n-1}] = Z_{n-1} - Z_{n-1} = 0$. Therefore, by using Hoeffding's Lemma, we know that 
+	
+	\begin{equation*}
+		\begin{aligned}
+		\Pr(Z_n - Z_0 > t) & \leq \exp(-st) \EE[\exp(s(Z_{n-1} - Z_{0})) \exp(\frac{s^2c_n^2}{2}) \\
+		& =  \exp(-st + \frac{s^2c_n^2}{2}) \EE[\exp(s(Z_{n-1} - Z_{0})) \\
+		& \leq \exp(-st + \frac{s^2c_n^2}{2}) \exp(\frac{s^2c_{n-1}^2}{2}) \EE[\exp(s(Z_{n-2} - Z_{0}))  \\
+		& \cdots \\
+		& \leq \exp(-st + \frac{s^2}{2}\sum\limits_{i=1}^n c_i^2)
+		\end{aligned}
+	\end{equation*}
+	
+	Let $s = \frac{t^2}{\sum\limits_{i = 1}^n c_i^2}$ and we can get that $	\Pr(Z_n - Z_0 > t) \leq \exp(-\frac{t^2}{2 \sum\limits_{i = 1}^n c_i^2})$.
+\end{proof}
+
+We can see that the above proof is a little bit similar to the proof of Hoeffding's Inequality in that they both take the exponential of both sides and then use Markov Inequality to transform probability into expectation. Afterwards, they perform some kind of relaxation for the expectation.
 \end{document}
