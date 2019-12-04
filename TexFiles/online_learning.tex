@@ -2,5 +2,415 @@
 
 \begin{document}
 \chapter{Online Learning Algorithm}
+In this chapter we will talk about the basics of online learning algorithm step by step. We will first introduce the online learning setting and an algorithm called halving algorithm, which is simple but has strong assumption. Afterwards, we will relax the assumption and introduction other algorithms such like exponential weighted algorithm.
 
+\section{Online Learning and Halving Algorithm}
+
+First of all, let's introduce a simple setting of online learning. In this setting,
+
+\begin{itemize}
+	\item Goal: predict rain/shine.
+	\item Have a set of $N$ weather experts.
+	\item On each day $t$, expert $i$ predicts $x^t_{i} \in \{0, 1\}$.
+	\item Based on the predictions of experts, the algorithm predicts $\hat{y^t} \in \{0, 1\}$.
+	\item Nature reveals $y^t \in \{0, 1\}$.
+	\item The number of mistakes increases by one if $\hat{y^t} \neq y^t$.
+	\item Assume there exists an perfect expert $j$, such that $x^t_{j} = y^t$ for all $t$.
+\end{itemize}
+
+We hope to develop an algorithm $\alg$ such that we can get an upper bound of total number of mistakes. In this setting, we can find a simple yet good algorithm called Halving algorithm such that the total number of mistakes is no larger than $\log N$.
+
+\begin{algorithm}[H]
+	\caption{Halving Algorithm}
+	\begin{algorithmic}
+		\STATE Let a set $C_1$ = $\{1, 2, \cdots, N\}$.
+		\STATE For $t = 1, 2, \cdots$
+		\bindent
+		\STATE Observe $x^t_{i}$, $\forall i \in C_t$.
+		\STATE $\hat{y^t} = round(\frac{1}{|C_t|} \sum\limits_{i\in C_t} x^t_{i})$
+		\STATE Let $C_{t+1} = C_t$
+		\STATE For all $i \in C_t$
+		\bindentt
+			\STATE If $x^t_{i}\neq y_{t}$, remove $i$ from $C_{t+1}$.
+		\eindentt
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+Basically, the algorithm will output the round of the average over all experts' output in the set. Afterwards, it will remove all the experts whose output is not the same as ground truth and continue. For this algorithm, we can have the following claim.
+
+\begin{claim}
+	For halving algorithm, it satisfies that the total number of mistakes is no larger than $\log_2 N$.
+\end{claim}
+
+\begin{proof}
+	The proof is quite simple. Initially we have $|C_1| = N$. Each time the number of mistakes increases, we can have that $|C_{t+1}| / |C_t| \leq 1 / 2$ since more than half of experts produces the different prediction than ground truth.
+	
+	Therefore, if the number of mistakes reaches $\log_2 N$, we will have that $|C_t| = 1$, which means the only expert in the set is the perfect expert and no more mistake will be made.
+\end{proof}
+
+Next, let's see an example of using halving algorithm to solve some problem.
+
+\begin{example}[Betting on sports]$ $
+	
+	Problem setting: let's say there are $n$ sport teams. On each round $t$, two teams $i_t$, $j_t$ play a match. Algorithm $\alg$ needs to predict if $i_t$ beats $j_t$ or vice versa. Then games happens, either $i_t$ or $j_t$ wins.
+	
+	Assume there exists a permutation $\pi^* \in S_n$, $i_t$ beats $j_t$ if and only if $\pi^*(i_t) > \pi^*(j_t)$.
+	
+	Now we need an algorithm that can minimize the number of mistakes to gain more revenue. We can design our algorithm by reducing to halving algorithm as following:
+	
+\begin{algorithm}[H]
+	\caption{Betting Algorithm}
+	\begin{algorithmic}
+		\STATE Treat every $\pi \in S_n$ as an expert.
+		\STATE Let the prediction of expert $i$ at round $t$ be $x^t_{i} = \mathbf{1}[\pi(i_t) > \pi(j_t)]]$.
+		\STATE Let the output of nature as $y_t = \mathbf{1}[\pi^*(i_t) > \pi^*(j_t)]$.
+		\STATE Run halving algorithm to the set of experts.
+	\end{algorithmic}
+\end{algorithm}
+	
+	By halving algorithm, we know that the total number of mistakes is no larger than $\log_2 |S_n|$. In this case it is $\log_2 n! = O(n\log n)$.
+\end{example}
+
+Halving algorithm is very intuitive and the upper bound is also very satisfying. However, the problem is that it assumes that there is a perfect experts that will not make any mistakes. This assumption is too strong and in most cases it is not satisfied. To handle this issue, in next section we introduction exponential weights algorithm. It removes the perfect expert assumption thus can generalize to more situations.
+
+\section{Exponential Weights Algorithm}
+
+In this section, we change the assumption. We no longer assume that there exists a perfect expert, and we introduce two new notations.
+
+\begin{itemize}
+	\item $M_T(i) = \sum\limits_{i = 1}^T \mathbf{1}[x^t_i \neq y^t]$
+	\item $M_T(\alg) = \sum\limits_{i = 1}^T \mathbf{1}[\hat{y^t} \neq y^t]$
+\end{itemize}
+
+In the other words, $M_T(i)$ is the number of mistakes expert $i$ makes up to time $T$ while $M_T(\alg)$ is the number of mistakes the algorithm makes.
+
+Since we have remove the assumption that there is an expert who will never make mistake, we need a smoother algorithm than halving algorithm because in halving algorithm we are zero-tolerant to any mistake. Before talking about exponential weighted algorithm, let's first talk about weighted majority algorithm.
+
+
+\begin{algorithm}[H]
+	\caption{Weighted Majority Algorithm}
+	\begin{algorithmic}
+		\STATE Let $w_i^1 = 1$, for $i = 1, \cdots, N$.
+		\STATE Let $\epsilon \in (0,1)$ be a parameter we choose.
+		\STATE For $t = 1,2,\cdots $
+		\bindent
+		\STATE Algorithm predicts $\hat{y^t} = round(\frac{\sum\limits_{i = 1}^N w_i^t x_i^t}{\sum\limits_{i = 1}^N w_i^t })$ 
+		\STATE For $i = 1, \cdots, N$
+		\bindentt
+		\STATE $w_i^{t+1} = w_i^t (1- \epsilon)^{\mathbf{1}[x_i^t \neq y^t]}$
+		\eindentt 
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+Intuitively, different from halving algorithm, in weighted majority algorithm, if an expert makes a mistake, we will reduce its weight rather than remove it from the set. The expert will still have contribution to the algorithm but the weight is smaller. One can also see that halving algorithm is a special case of weighted majority algorithm when $\epsilon = 1$.
+
+For this algorithm, we have the following theorem:
+
+\begin{theorem}
+	For any $\epsilon$ and expert $i$, no matter what the sequence $y^1, \cdots, y^T$ is, we can have that
+	\begin{equation}
+	M_T(WMA)\leq \frac{2\log_e N}{\epsilon} + 2(1+\epsilon) M_T(i).
+	\end{equation}
+\end{theorem}
+
+To prove this theorem, we will need the following lemma first:
+
+\begin{lemma}\label{inequality_lemma}
+	The following inequalities are valid.
+	\begin{enumerate}
+		\item $\log (1+x) \leq x$.
+		\item $1 + x \leq \exp(x)$.
+		\item $\exp(\alpha x) \leq 1 + (\exp(\alpha) - 1) x$, for $x\in [0,1]$.
+		\item $-\log (1+x) \leq -x + x^2$, for $x \in [-1, \frac{1}{2}]$.
+	\end{enumerate}
+\end{lemma}
+
+There are many kinds of proof to this lemma online, thus we will omit the proof here. Next, we will go directly into the proof to this theorem.
+
+\begin{proof}
+	Let $\Phi_t = \sum\limits_{i = 1}^N w_i^t$. Notice that $\Phi_1 = N$. Furthermore, since all weights are non-negative, we can have that $\Phi_{T+1}  \geq w_i^{T+1} = (1-\epsilon)^{M_T(i)}$.
+	
+	We now take a look at the case when $WMA$ makes a mistake at round $t$. In that case, we know that at least half of total weights are wrong. That is, at least $\frac{\sum\limits_{i = 1}^N w_i^t}{2}$ will shrink. By the updating formula of weights in WMA, we can have that 
+	\begin{equation*}
+	\begin{aligned}
+			\Phi_{t+1} &\leq \frac{\sum\limits_{i = 1}^N w_i^t}{2} + (1-\epsilon)\frac{\sum\limits_{i = 1}^N w_i^t}{2}\\
+			& = (1- \frac{\epsilon}{2}) \sum\limits_{i = 1}^N w_i^t\\
+			& = (1- \frac{\epsilon}{2}) \Phi_t.
+	\end{aligned}
+	\end{equation*}
+	
+	Therefore, $\Phi_{T+1} \leq \Phi_0 (1-\frac{\epsilon}{2})^{M_T(WMA)} = N(1-\frac{\epsilon}{2})^{M_T(WMA)}$.
+	
+	Now, combine above inequalities and we can have that
+	
+	\begin{equation*}
+		\begin{aligned}
+			(1-\epsilon)^{M_T(i)} \leq \Phi_{T+1} \leq  N(1-\frac{\epsilon}{2})^{M_T(WMA)}.
+		\end{aligned}
+	\end{equation*}
+	
+	Take log on both left side and right side we can get that
+	\begin{equation*}
+		\begin{aligned}
+			M_T(i) \log(1-\epsilon) \leq \log(N) + M_T(WMA)\log(1-\frac{\epsilon}{2}).
+		\end{aligned}
+	\end{equation*}
+	
+	Use inequality $1$ and $4$ in the lemma and we get
+	\begin{equation*}
+	\begin{aligned}
+	M_T(i) (\epsilon + \epsilon^2) \geq -\log(N) + \frac{\epsilon}{2}  M_T(WMA).
+	\end{aligned}
+	\end{equation*}
+	
+	This directly indicates that 
+	\begin{equation*}
+	\begin{aligned}
+	M_T(WMA) \leq \frac{2\log N}{\epsilon} + 2 (1 + \epsilon) M_T(i) .
+	\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Since $i$ can take any value, we know that $M_T(WMA) \leq \frac{2\log N}{\epsilon} + 2 (1 + \epsilon) M_T(i^*) $ where $i^*$ is the best expert that makes least number of mistakes
+
+Following this theorem, by setting $\epsilon = \sqrt{\frac{\log N}{M_T(i^*)}}$, we reach that 
+	\begin{equation*}
+\begin{aligned}
+M_T(WMA) & \leq \frac{2\log N}{ \sqrt{\frac{\log N}{M_T(i^*)}}} + 2 (1 + \sqrt{\frac{\log N}{M_T(i^*)}}) M_T(i^*)  \\
+&= 2\sqrt{M_T(i^*) \log N } + 2 M_T(i^*) + 2\sqrt{\frac{\log N}{M_T(i^*)}} M_T(i^*) \\
+& = 2 M_T(i^*) + 4\sqrt{M_T(i^*) \log N }.
+\end{aligned}
+\end{equation*}
+
+This concludes our discussion about weighted majority algorithm. We will now start discussing about exponential weighted algorithm. Before talking about the algorithm details, let's first introduce two new settings for this algorithm.
+
+\begin{itemize}
+	\item Setting 1: Continuous Prediction
+	\begin{itemize}
+		\item At time $t$, each expert $i$ predicts $x_i^t \in [0,1]$.
+		\item Algorithm predicts $\hat{y^t} \in [0,1]$.
+		\item Nature outcomes $y^t \in \{0,1\}$.
+		\item We have a convex loss function $l:[0,1] \times \{0,1\} \to \R$.
+		\item The loss of expert $i$ at $t$ is $l(x_i^t, y^t)$.
+		\item The loss of algorithm at $t$ is $l(\hat{y^t}, y^t)$.
+		\item Define $L_t(i) = \sum\limits_{s = 1}^t l(x_i^s, y^s)$.
+		\item Define $L_t(Alg) =\sum\limits_{s = 1}^t l(\hat{y}^s, y^s) $.
+	\end{itemize}
+	
+	We can see that $L_t(i) = L_{t-1}(i) + l(x_i^t, y^t)$. We can give some examples of loss functions.
+	\begin{enumerate}
+		\item Absolute loss: $l(\hat{y} ,y) = |\hat{y} - y|$.
+		\item Square loss: $l(\hat{y} ,y) = (\hat{y} - y)^2$.
+		\item Log loss: $l(\hat{y}, y) = -y \log \hat{y} - (1-y) \log(1-\hat{y})$.
+	\end{enumerate}
+	\item Setting 2: Hedge/Action Setting
+	
+	\begin{itemize}
+	\item There are $N$ actions.
+	\item Algorithm must (randomly) select an action $i_t$ on day $t$.
+	\item This is equivalent that algorithm selects a distribution $\p^t \in \Delta_N$.
+	\item Nature chooses losses $l^t = [l_1^t,\cdots, l_N^t] \in [0,1]^N$, where $l_i^t$ means the cost of choosing $i$.
+	\item Then, the expected loss to this algorithm is defined as $p^t l^t = \EE[l_i^t]$.
+	\item Define $L_t(i) = \sum\limits_{s = 1}^t l_i^s$.
+	\item Define $L_t(Alg) =\sum\limits_{s = 1}^t p^s l^s $.
+	\end{itemize}
+\end{itemize}
+
+To continue, we define the regret of an algorithm, which is the cost function that we want to minimize.
+
+\begin{definition}[\bfseries Regret]
+	The regret of an algorithm is defined as
+	\begin{equation}
+	Regret_T(Alg) = L_T(Alg) - \min\limits_{i\in [N]} L_T(i).
+	\end{equation}
+\end{definition}
+
+Now we will give the algorithm details of Exponential Weights Algorithm:
+
+\begin{algorithm}[H]
+	\caption{Exponential Weights Algorithm}
+	\begin{algorithmic}
+		\STATE Let $w_i^1 = 1$, for $i = 1, \cdots, N$. Choose $\eta > 0$.
+		\STATE For $t = 1,\cdots, T$
+		\bindent
+		\STATE For $i = 1,\cdots , N$
+		\bindentt
+		\STATE $w_i^t = \exp(-\eta L_t(i))$
+		\eindentt
+		\STATE Prediction Setting:
+		\bindentt
+		\STATE Observe $x_1^t, \cdots ,x_N^t$
+		\STATE Output $\hat{y^t} = (\sum\limits_{i=1}^N w_i^t x_i^t) / (\sum\limits_{i=1}^N w_i^t)$
+		\STATE Observed $y^t$.
+		\eindentt
+		\STATE Hedge Setting:
+		\bindentt
+		\STATE Output $\p^t = \frac{1}{\sum\limits_{i=1}^N w_i^t} [w_1^t, \cdots, w_N^t]$
+		\STATE Observed $l^t \in [0,1]^N$.
+		\eindentt
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+For prediction setting, we can see that it is the same as WMA algorithm except the way it updates the weights. We have the following theorem for Exponential Weights Algorithm:
+
+\begin{theorem}\label{ewa_theorem}
+	For any sequence of inputs and any choice of $\eta$, we have that 
+	\begin{equation}
+	L_T(EWA) \leq \frac{\eta L_t(i) + \log N}{1 - \exp(-\eta)}
+	\end{equation}
+\end{theorem}
+
+\begin{corollary}\label{ewa_corollary}
+	For an excellent choice of $\eta$, we have that 
+	\begin{equation}
+	L_T(EWA) - L_T(i) \leq \log N + 2 \sqrt{L_T(i^*) \log N}.
+	\end{equation}
+	
+	It means that the regret of algorithm is not larger than $\log N + 2 \sqrt{L_T(i^*) \log N}$.
+\end{corollary}
+
+Compare it with the result of weighted majority algorithm, we can see that EWA has much better performance when $M_T(i^*) \gg \log N$. Next, before proving the theorem, let's first prove a lemma that will be used.
+
+\begin{lemma}
+	Let $X$ be a random variable in $[0,1]$, then $\log(\EE[\exp(sX)]) \leq (\exp(s) - 1) \EE[X]$.
+\end{lemma}
+	\begin{proof}
+		
+		With the inequalities in Lemma $\ref{inequality_lemma}$, we can show that 
+		
+		\begin{equation*}
+		\begin{aligned}
+		\log (\EE[\exp(sX)]) & \leq \log (\EE[1 + (\exp(s) - 1)X]) \\
+		& = \leq \log (1 + (\exp(s) - 1)\EE[X])\\
+		& \leq ((\exp(s) - 1) \EE[X])
+		\end{aligned}
+		\end{equation*}
+	\end{proof}
+
+Next, let's prove theorem \ref{ewa_theorem}. We will prove the algorithm in Hedge setting, but the proof is almost the same for prediction setting. 
+
+\begin{proof}
+	First of all, let's define a random variable $X_t$ as $X_t = l(x_i^t,y^t)$ with probability $\frac{w_i^t}{\sum\limits_{i = 1}^N w_j^t}$.
+	
+	Then, like in the proof of WMA, we also define a function $\Phi_t = -\log(\sum\limits_{i = 1}^N w_i^t)$. We can get that
+	
+	\begin{equation*}
+		\begin{aligned}
+			\Phi_{t+1} - \Phi_t & = -\log(\frac{\sum\limits_{i = 1}^N w_i^{t+1}}{\sum\limits_{i = 1}^N w_i^t}) \\
+			& = -\log(\frac{\sum\limits_{i = 1}^N w_i^{t} \exp(-\eta l(x_i^t,y^t))}{\sum\limits_{i = 1}^N w_i^t}) \\
+			& = -\log( \sum\limits_{i = 1}^N \frac{w_i^{t}}{\sum\limits_{j = 1}^N w_j^t} \exp(-\eta l(x_i^t,y^t))) \\
+			& = -\log (\EE[\exp(-\eta X_t)]) \\
+			& \geq (1 - \exp(-\eta)) \EE[X_t] \\
+			& = (1 - \exp(-\eta)) ( \sum\limits_{i = 1}^N \frac{w_i^{t}}{\sum\limits_{j = 1}^N w_j^t} l(x_i^t,y^t))) \\
+		(Jensen's\ Inequality)	& \geq  (1 - \exp(-\eta)) l(\sum\limits_{i = 1}^N \frac{w_i^{t} x_i^t}{\sum\limits_{j = 1}^N w_j^t},y^t) \\
+		& =  (1 - \exp(-\eta)) l(\hat{y^t}, y^t).
+		\end{aligned}
+	\end{equation*}
+	
+	In addition, we know that $\Phi_1 = -\log N$ and $\Phi_{T+1} = -\log(\sum\limits_{i = 1}^N \exp(-\eta L_T(i))) \leq \eta L_T(i) $ for any $i$. Therefore,
+	\begin{equation*}
+	\begin{aligned}
+	\log N + \eta L_T(i) & \geq  \Phi_{T} - \Phi_1 \\
+	 & = \sum\limits_{t = 1}^T (\Phi_{t+1} - \Phi_{t})  \\
+	 & =  \sum\limits_{t = 1}^T (1 - \exp(-\eta)) l(\hat{y^t}, y^t) \\
+	 & =  (1 - \exp(-\eta)) L_T(EWA).
+	\end{aligned}
+	\end{equation*}
+	
+	Therefore, we can have that for any $i$,
+	\begin{equation*}
+	L_T(EWA) \leq \frac{\log N + \eta L_T(i)}{1 - \exp(-\eta)}.
+	\end{equation*}
+\end{proof}
+
+From corollary \ref{ewa_corollary}, we know that by choosing $\eta$ carefully, we can have that $Regret_T(EWA) \leq \log N + 2 \sqrt{L_T(i^*) \log N}$. If the loss function $l(x_i^s, y^s) \in [0,1]$, it holds that
+
+\begin{equation*}
+\begin{aligned}
+\frac{L_T(EWA) - L_T(i)}{T} & \leq \frac{1}{T} (\log N + 2 \sqrt{L_T(i^*) \log N}) \\
+& = O(\frac{1}{\sqrt{T}}).
+\end{aligned}
+\end{equation*}
+
+It shows that $\frac{Regret_T }{T}$ will goes to zero as $T \to \infty$. 
+
+Hedge setting and prediction setting belong to a category called full information setting. It means besides the choice algorithm makes, it also knows the loss of all alternative choices. Next we will talk about Perception Algorithms.
+
+\section{Perception}
+
+We now introduce a new setting called linear prediction setting:
+
+\begin{itemize}
+	\item At time t, observe $x^t \in \R^d$ with $||x^t||_1 \leq 1$.
+	\item Define linear predictor as a function $h_w(\cdot)$ parameterized by $w \in \R^d$ and $h_w(\cdot) = sign(w \cdot x)$.
+	\item Predict $\hat{y^t} \in \{-1, 1\}$ using some linear predictor.
+	\item Outcome $y^t \in \{-1, 1\}$.
+\end{itemize}
+
+We assume that for some $\gamma$, $\exists w$ such that $||w||_2 \leq 1$ and $(w\cdot x^t) y^t > \gamma$ for any $t$. This is equivalent to $\exists w$, such that $||w||^2_2 \leq \frac{1}{\gamma^2}$ and $(w\cdot x^t) y^t > 1$ for any $t$.
+
+Intuitively, this assumption means that there exists a perfect linear predictor with respect to margin $\gamma$. Based on this assumption, we can start talking about perception algorithm.
+
+\begin{algorithm}[H]
+	\caption{Perception}
+	\begin{algorithmic}
+		\STATE Let $w^1 = 0 \in \R^d$
+		\STATE For $t = 1,\cdots, T$
+		\bindent
+			\STATE $\hat{y^t} = sign(w^t \cdot x^t)$.
+			\STATE Observe $y^t$.
+			\STATE If $y^t(w^t\cdot x^t) >0$, then $w^{t+1} = w^t$.
+			\STATE Else, $w^{t+1} = w^t + x^ty^t$.
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+This algorithm is the same as gradient descent algorithm with loss function $l(w;(x,y)) = \max\{0, -(w\cdot x)y\} $, and
+\begin{equation*}
+	w^{t+1} = w^t - \nabla l(w^t;(x^t,y^t)).
+\end{equation*}
+
+For Perception Algorithm, the following theorem holds that 
+
+\begin{theorem}
+	Let $M_T = \sum\limits_{i=1}^T \mathbf{1}[y^t(w^t\cdot x^t) < 0]$. Assume $\exists w^*$ such that $||w^*||\leq \frac{1}{\gamma}$ and $(w^*\cdot x^t) y^t \geq 1$, for any $t$. Then
+	
+	\begin{equation}
+	M_T \leq \frac{1}{\gamma^2}.
+	\end{equation}
+\end{theorem}
+
+\begin{proof}
+	Suppose $w^*$ satisfies the assumption in theorem, then define $\Phi_{t} = ||w^* - w^t||^2$.
+	
+	Notice that 
+	\begin{equation*}
+		\begin{aligned}
+			\Phi_{1} &= ||w^* - w^1||^2
+					 & = ||w^*|| \\
+					 &\leq \frac{1}{\gamma^2}.
+		\end{aligned}
+	\end{equation*}
+	
+	Therefore, 
+	\begin{equation*}
+	\begin{aligned}
+	\frac{1}{\gamma^2} &\geq \Phi_{1} - \Phi_{T+1} \\
+	& = \sum\limits_{t = 1}^T ( \Phi_{t} - \Phi_{t+1}) \\
+	& = \sum\limits_{t = 1}^T ( ||w^* - w^t||^2 -||w^* - w^{t+1}||^2) \\
+	& =  \sum\limits_{t:\textmd{mistake}(t)} ( ||w^* - w^t||^2 -||w^* - w^t - x^ty^t||^2) \\
+	& =  \sum\limits_{t:\textmd{mistake}(t)} 2(w^* - w^t)(x^ty^t) -(y^t)^2||x^t||^2 \\
+	& =  \sum\limits_{t:\textmd{mistake}(t)} 2(w^* - w^t)(x^ty^t) -||x^t||^2 \\
+	& \geq \sum\limits_{t:\textmd{mistake}(t)} 2(w^* - w^t)(x^ty^t) - 1\\
+	(y^t(w^t\cdot x^t) < 0)& \geq \sum\limits_{t:\textmd{mistake}(t)} 2(w^*)(x^ty^t) - 1 \\
+	(y^t(w^*\cdot x^t) \geq 1)& \geq \sum\limits_{t:\textmd{mistake}(t)} 1\\ 
+	& = M_T.
+	\end{aligned}
+	\end{equation*}
+	
+	Therefore, we can get directly that $M_T \leq \frac{1}{\gamma^2}$.
+\end{proof}
 \end{document}

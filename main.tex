@@ -34,7 +34,7 @@
 \def\ab{\mathbf{a}}
 
 
-	
+
 
 \renewcommand{\cite}[1]{[#1]}
 \def\beginrefs{\begin{list}
@@ -55,7 +55,24 @@
 	\end{center}
 }
 %%% END_OF_PREAMBLE %%%
+\newlength\myindent % define a new length \myindent
+\setlength\myindent{3em} % assign the length 2em to \myindet
+\newcommand\bindent{%
+	\begingroup % starts a group (to keep changes local)
+	\setlength{\itemindent}{\myindent} % set itemindent (algorithmic internally uses a list) to the value of \mylength
+	\addtolength{\algorithmicindent}{\myindent} % adds \mylength to the default indentation used by algorithmic
+}
+\newcommand\eindent{\endgroup} % closes a group
 
+
+\newlength\myindentt% define a new length \myindent
+\setlength\myindentt{6em} % assign the length 2em to \myindet
+\newcommand\bindentt{%
+	\begingroup % starts a group (to keep changes local)
+	\setlength{\itemindent}{\myindentt} % set itemindent (algorithmic internally uses a list) to the value of \mylength
+	\addtolength{\algorithmicindent}{\myindentt} % adds \mylength to the default indentation used by algorithmic
+}
+\newcommand\eindentt{\endgroup} % closes a group
 
 
 %%%%You may add more \newtheorem if necessary%%%%%%
