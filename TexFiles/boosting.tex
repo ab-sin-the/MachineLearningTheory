@@ -2,5 +2,176 @@
 
 \begin{document}
 \chapter{Boosting}
+In this chapter, we will talk about boosting, its definition and some theorems related to it. We will first give a definition of boosting.
 
+\begin{definition}[\bfseries Boosting]
+	There are a set of data $\{(x_1, y_1),\cdots, (x_n, y_n) \} \subset X \times \{-1,1\}$ and a class of weak learners $\H$. Each $h \in \H$ maps $X \to \{-1,1\}$. These learners are "weak" means that typically, you should not expect to find a "good" $h\in \H$ for any particular problem.
+	
+	The problem in boosting is that maybe we can combine many $h$s from $\H$ to get an ensemble function $F(x) = sign(\sum\limits_{i=1}^n q_ih_i(x))$ that has good performance on problem.
+\end{definition}
+
+To continue, let's define two conditions in boosting: Weak Lemma Condition and Strong Lemma Condition.
+
+\begin{definition}[\bfseries Weak Lemma Condition]
+The weak lemma condition states that for any distribution $\p \in \Delta_n$, these exists some $h \in \H$ such that 
+\begin{equation}
+\Pr\limits_{(x_i,y_i) \sim p} [h(x_i) = y_i] = \sum\limits_{i=1}^n p_i \mathbf{1} [h(x_i) = y_i] \geq \frac{1}{2} + \gamma.
+\end{equation}
+
+\end{definition}
+
+In other words, it means that there exists a learner whose probability of being right is at least $\frac{1}{2} + \gamma$ for any distribution $\p$.
+
+\begin{definition}[\bfseries Strong Lemma Condition]
+The strong lemma condition states that $\exists \qb \in \Delta (\H)$ such that for every $(x,y)$ in sample, 
+
+\begin{equation}
+\sum\limits_{h\in \H} \qb(h) \cdot h(x_i)y_i > 0.
+\end{equation}
+
+That is, $F(x) = y$ for any data $(x,y)$ in sample.
+
+
+\end{definition}
+
+Intuitively, it means that there exists a way to combine all the weak learner, such that the ensemble function $F(x)$ can output the correct value for any data in the data set.
+
+We will next use the theorems from game theory to prove a famous theorem in boosting:
+
+\begin{theorem}
+Weak lemma condition is identical to strong lemma condition. That is, weak lemma condition is satisfied if and only if strong lemma condition is satisfied.
+\end{theorem}
+
+Before going into the proof of this theorem, we will first try to transform WLC (Weak Lemma Condition) and SLC (Strong Lemma Condition) into a game theory format.
+
+Let $M \in \R^{n\times m}$ be a matrix such that $M_{ij} = y_i h_j(x_i)$. 
+
+Then WLC means that $\forall \p \in \Delta_n$, $\exists i \in [m]$, such that $\p^T M e_i \geq 2\gamma$. That is
+
+\begin{equation*}
+\min\limits_{\p \in \Delta_n} \max\limits_{j \in [m]} \p^T M e_j \geq 2\gamma.
+\end{equation*}
+
+Since $\p^T M $ is a vector, which means $\min\limits_{\p \in \Delta_n} \max\limits_{j \in [m]} \p^T M e_j = \min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb \geq 2\gamma > 0$.
+
+Similarly, SLC means that $\exists \qb \in \Delta_m$, $\forall \p \in \Delta_n$, it has $\p^T M \qb > 0$.
+
+That is 
+
+\begin{equation*}
+\max\limits_{\qb \in \Delta_m} \min\limits_{\p \in \Delta_n} \p^T M \qb > 0.
+\end{equation*}
+
+By Minimax Theorem, we can know that these two statements are equivalent to each other.
+
+Finally, in the last part of this chapter, we try to solve the problem that let $M$ be any payoff matrix bounded in $[0,1] \in \R^{n\times m}$, we want to find an approximate min-max pair $\hat{\p}$, $\hat{\qb}$ satisfying the following condition:
+
+\begin{equation*}
+\begin{aligned}
+\max\limits_{\qb \in \Delta_m} \tilde{\p}^T M \qb \leq V^* + \epsilon \\
+\min\limits_{\p \in \Delta_n} \p^T M \tilde{\qb} \leq V^* - \epsilon 
+\end{aligned}
+\end{equation*},
+
+where $V^* = \min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb$.
+
+The reason we want to do so is the following theorem:
+
+\begin{theorem}
+For boosting game, if we find a $\tilde{\p}$, $\tilde{\qb}$, which are $\epsilon$-approximate Nash equilibrium, and $\epsilon < 2 \gamma$, then $\forall$ $i$, it holds that 
+\begin{equation}
+F_{\tilde{\qb}} (x_i) = y_i.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+By assumption, we know that $\forall$ $i$, 
+
+\begin{equation*}
+	\begin{aligned}
+		e_i^T M \tilde{\qb} \geq V^* -\epsilon. 
+	\end{aligned}
+\end{equation*}
+
+By weak lemma condition, we can get that $V^* = \min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb \geq 2\gamma$.
+
+Therefore, 
+
+\begin{equation*}
+\begin{aligned}
+e_i^T M \tilde{\qb} \geq 2\gamma -\epsilon > 0. 
+\end{aligned}
+\end{equation*}
+
+Equivalently, it means that $y_i \sum\limits_{j=1}^m \tilde{\qb}  h_j(x_i) > 0 $ for any $(x_i, y_i)$. 
+
+Thus, $\forall$ $i$, $F_{\tilde{\qb}} (x_i) = y_i$.
+\end{proof}
+
+After this, we try to solve this zero-sum game using exponential weights algorithm.
+
+\begin{algorithm}
+	\floatname{algorithm}{}
+	\begin{algorithmic}
+		\STATE For $t = 1, \cdots ,T$
+		\bindent
+		\STATE For $i = 1, \cdots , n$
+		\bindentt
+			\STATE $\p_t(i) = \exp(-\eta \sum\limits_{s=1}^{t-1} e_i^T M\qb_s) / Z$.
+		\eindentt
+		\STATE For $j = 1, \cdots , m$
+		\bindentt
+			\STATE $\qb_t(j) = \exp(-\eta \sum\limits_{s=1}^{t-1} \p_s^T M e_j) / Z'$.
+		\eindentt
+		
+		Return $\pb, \qb = (\frac{1}{T} \sum\limits_{t = 1}^T \p_t, \frac{1}{T} \sum\limits_{t = 1}^T \qb_t) $. 
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+The following theorem holds for this algorithm:
+
+\begin{theorem}
+	$\tilde{\p}, \tilde{\qb}$ are an $\epsilon$-approx Nash Equilibrium, where $\epsilon = \frac{Reg^\p_T + Reg^\qb_T}{T}$.
+\end{theorem}
+
+\begin{corollary}
+	Consider new version with $\qb_t = \arg\max\limits_{\qb \in \Delta_m} \p_t^TMq$, which indicates that $Reg_T^\qb \leq 0$. That means $\epsilon = \frac{Reg_T^\p}{T}$.
+\end{corollary}
+
+Now we use this algorithm in boosting:
+
+\begin{algorithm}[H]
+	\caption{In Boosting}
+	\begin{algorithmic}
+		\STATE For $t = 1, \cdots ,T$
+		\bindent
+		\STATE For $i = 1, \cdots , n$
+		\bindentt
+		\STATE $\p_t(i) = \exp(-\eta \sum\limits_{s=1}^{t-1} y_i h_{js}(x_i)) / Z$.
+		\eindentt
+		\STATE $\qb_t(j) =  \arg\max\limits_{e_j} \p^T Me_j$.
+		\STATE $\ \ \ \ \ \ \  =  \arg\max\limits_{j} \sum\limits_{i = 1}^n \p_t(i) h_j(x_i) $ = $e_{\textmd{Best Weak Learner at }t}$.
+
+		
+		Return $\pb, \qb = (\frac{1}{T} \sum\limits_{t = 1}^T \p_t, \frac{1}{T} \sum\limits_{t = 1}^T \qb_t) $. 
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+The last question in this chapter remained to be answered is how many rounds are needed to reach $\epsilon <2\gamma$.
+
+By theorem $\ref{ewa_theorem}$, we know that when it reaches $\epsilon <2\gamma$, it has
+
+\begin{equation*}
+	\begin{aligned}
+	\epsilon &= \frac{Reg_T^\p}{T}\\ 
+	&\leq \frac{\log N + \sqrt{T\log N}}{T} \\
+	& < 2\gamma.
+	\end{aligned}
+\end{equation*}
+
+It means that it needs $T > \frac{\log N}{4\gamma^2}$ rounds.
+
+That ends our discussion about boosting.
 \end{document}
