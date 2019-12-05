@@ -2,5 +2,155 @@
 
 \begin{document}
 \chapter{Game Theory}
+In this chapter, we will talk about the basics of game theory. First of all, let's give some definitions in game theory.
 
+\begin{definition}[\bfseries Bimatrix Game]
+	A two player bimatrix game is defined by matrix $M \in \R^{n\times m}$ and $N \in \R^{n\times m}$. 
+	
+	Each player (typically randomly) selects distribution $\p \in \Delta_n$, $\qb \in \Delta_m$. If player $1$ chooses $i\in [n]$ and player 2 chooses $j \in [m]$, then player $1$ gets utility $U^1(i,j) = M_{ij}$ and player $2$ gets utility $U^2(i,j) = N_{ij}$. Therefore, the utilities for their choices $\p$ and $\qb$ is defined as an expectation
+	\begin{equation}
+	\begin{aligned}
+	U^1(p,q) = \EE[M_{ij}] = \p^T M \qb \\
+	U^2(p,q) = \EE[N_{ij}] = \p^T N\qb 
+	\end{aligned}
+	\end{equation}
+\end{definition}
+	In addition, if $M + N = 0 \in \R^{n\times m}$, then the game is called zero-sum game.
+	
+	Next, we will give a definition of Nash's equilibrium.
+	
+	\begin{definition}[\bfseries Nash's Equilibrium]
+		Given $M$, $N \in \R^{n\times n}$, $\p \in \Delta_n$ and $\qb \in \Delta_m$, $(\p,\qb)$ is called a Nash equilibrium if the following two inequalities hold:
+		
+		\begin{equation}
+			\begin{aligned}
+				\p^T M \qb &\geq \tilde{\p}^T M \qb,\ \forall \tilde{\p} \in \Delta_n \\
+				\p^T N \qb &\geq \p^T N \tilde{\qb},\ \forall \tilde{\qb} \in \Delta_m 
+			\end{aligned}
+		\end{equation}
+		
+		Intuitively, it means that $(\p, \qb)$ is a Nash equilibrium if and only if both players reach the best utility they can get at that point. That is, they cannot increase their utility by changing their strategy.
+	\end{definition}
+
+	We will next give two famous theorems in game theory. 
+	
+	\begin{theorem}[\bfseries Nash's Theorem]
+		For every bimatrix game $M$ and $N$, there always exists a Nash's equilibrium.
+	\end{theorem}
+
+	\begin{proof}
+		The proof of this theorem relies on Brouwer's Fixed Pointer theorem.
+		
+		In Brouwer's Fixed Point theorem, it states that if a function $f: \K \to \K $ is continuous, then $\exists\ x\in \K$ such that $f(x) = x$. 
+		
+		The proof of Nash's theorem is just to find correct $\K$ and $f$, then the fixed pointer $x$ is the equilibrium.
+	\end{proof}
+
+	\begin{theorem}[\bfseries Maximum Theorem (Von Neumann)]	
+		The following equation holds for any zero sum game defined by $M \in \R^{n \times m}$
+		
+		\begin{equation}
+			\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb = \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb.
+		\end{equation}		
+	\end{theorem}
+
+	\begin{proof}
+		To prove this equality, we will prove that either side is no larger the other side. That is, 
+		\begin{equation*}
+		\begin{aligned}
+		\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb \leq \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb \\
+		\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb \geq \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb
+		\end{aligned}
+		\end{equation*}
+		
+		We will first prove $\geq$ which is easier than $\leq$.
+		
+		Let $\p_* = \arg\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb$ and $\qb_* = \arg \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb$. Then we can have that 
+		
+		\begin{equation*}
+		\begin{aligned}
+		\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m}  \p^T M \qb  =  \max\limits_{\qb \in \Delta_m}  \p_*^T M \qb \geq \p_*^TM\qb_* \\
+		\max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb = 	\min\limits_{\p \in \Delta_n} \p^T M \qb_* \leq \p_*^T M \qb 
+		\end{aligned}
+		\end{equation*}
+		
+		Combine the above two equations we can have that 
+		\begin{equation*}
+			\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m}  \p^T M \qb \geq \p_*^TM\qb_* \geq 	\max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb .
+		\end{equation*}
+		
+		Next we continue to prove that $\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb \leq \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb$.
+		
+		To do so, we will utilize exponential weighted algorithm.
+		
+		Imagine a repeated game:
+		\begin{algorithm}
+			\floatname{algorithm}{}
+				\begin{algorithmic}
+					\STATE For $t = 1, \cdots ,T$
+					\bindent
+						\STATE $\p_t$ chosen by $P_1$.
+						\STATE $\qb_t$ chosen by $P_2$.
+						\STATE $\p_t$ observes loss vector $l_t = M \qb_t$.
+						\STATE $\qb_t$ observes loss vector $h_t = -M^T \p_t$.
+						\STATE Players update to $p_{t+1}$, $q_{t+1}$ via EWA for these loss vectors. 
+					\eindent
+				\end{algorithmic}
+		\end{algorithm}
+	
+		Then, we can have 
+		\begin{equation*}
+			\begin{aligned}
+				\frac{1}{T} \sum\limits_{t=1}^T \p_t^T M \qb_t & = \frac{1}{T} \sum\limits_{t=1}^T \p_t^T l_t \\
+				& = \min\limits_{\p \in \Delta_n} \frac{1}{T} \sum\limits_{t=1}^T \p^T l_t + \frac{Regret_T}{T} \\
+				& = \min\limits_{\p \in \Delta_n} \frac{1}{T} \sum\limits_{t=1}^T \p^T M \qb_t + \epsilon_T^p \\
+				& = \min\limits_{\p \in \Delta_n} \p^T M \bar{\qb} + \epsilon_T^p \\
+				& \leq  \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb + \epsilon_T^p.
+  			\end{aligned}
+		\end{equation*}
+		
+		Similarly, 
+		\begin{equation*}
+			\begin{aligned}
+				-\frac{1}{T} \sum\limits_{t=1}^T \p_t^T M \qb_t & = \frac{1}{T} \sum\limits_{t=1}^T \qb_t^T h_t \\
+				& = \min\limits_{\qb \in \Delta_m}\sum\limits_{t=1}^T \frac{1}{T}\qb^T h_t + \epsilon_T^q \\
+				& = -\max\limits_{\qb \in \Delta_m} \sum\limits_{t=1}^T \frac{1}{T}\p^t M \qb  + \epsilon_T^q \\
+				& = -\max\limits_{\qb \in \Delta_m} \bar{\p}^T M \qb  + \epsilon_T^q \\
+				& \leq - \min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb  + \epsilon_T^q \\
+			\end{aligned}
+		\end{equation*}
+		
+		Combine the above two inequalities  we can get that 
+		\begin{equation*}
+		\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb  - \epsilon_T^q  \leq \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb + \epsilon_T^p
+		\end{equation*}
+		
+		This indicates that $\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb \leq \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb$.
+		
+		Therefore, we can conclude that  $\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb = \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb$.
+	\end{proof}
+
+	\begin{corollary}
+		$\bar{\p}_T$, $\bar{\qb}_T$ are $\epsilon$ approximate to Nash equilibrium, where $\epsilon = \epsilon_T^q + \epsilon_T^p$. Therefore, the above proof also gives an algorithm to calculate Nash equilibrium.
+	\end{corollary}
+	
+	\begin{corollary}
+		Minimax theorem can also directly proves Nash's theorem by setting the Nash equilibrium $(\p_*, \qb_*)$ as following:
+		\begin{equation*}
+			\begin{aligned}
+				\p_* = \arg\min\limits_{\p \in \Delta_n} \max\limits_{\qb \in \Delta_m} \p^T M \qb\\ 
+				\qb_* = \arg \max\limits_{\qb \in \Delta_m} 	\min\limits_{\p \in \Delta_n} \p^T M \qb.
+			\end{aligned}
+		\end{equation*}
+		
+		We can then prove that 
+		\begin{equation*}
+			\begin{aligned}
+				\p_*^T(-M) \qb_* &\geq \tilde{\p}^T (-M) \qb_*,\ \forall \tilde{\p} \in \Delta_n \\
+				\p_*^T M \qb_* &\geq \p_*^T M \tilde{\qb},\ \forall \tilde{\qb} \in \Delta_m 	.
+			\end{aligned}
+		\end{equation*}
+	\end{corollary}
+
+	That concludes our discussion about game theory.
 \end{document}
