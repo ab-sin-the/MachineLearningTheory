@@ -3,4 +3,583 @@
 \begin{document}
 \chapter{Online Convex Optimization}
 In this chapter, we will talk about online convex optimization. We will focus on the definition of this problem, some algorithms to solve it and their complexities.
+
+To begin with, let's talk about the framework used in online convex optimization.
+
+\section{Framework}
+
+\begin{itemize}
+	\item Given $\K \subset \R^d$, and $\K$ is bounded, convex and closed.
+	\item At each round t, learner selects $x_t \in \K$.
+	\item Nature reveals a convex function $f_t: \K \to \R$.
+	\item Learner wants to minimize $Regret_T = \sum\limits_{t = 1}^T f_t(x_t) - \min\limits_{x\in \K}  \sum\limits_{t = 1}^T f_t(x)$.
+\end{itemize}
+
+Let's see three examples about online convex optimization.
+
+\begin{example}[\bfseries Prediction with respect to expert advice]
+	The prediction setting we talked about in online learning algorithm is an example of online convex optimization, where
+	
+	\begin{itemize}
+		\item $\K = \Delta_N$.
+		\item $f_t(\tilde{w}) = l(\sum\limits_{i=1}^N \tilde{w_i} x_i^t, y^t)$.
+	\end{itemize}
+\end{example}
+
+\begin{example}[\bfseries Online Portfolio Selection]
+	In this setting, we have
+	
+	\begin{itemize}
+		\item $\K = \Delta_N$.
+		\item $w^t$ is the distribution of $n$ stocks fluctuations.
+		\item $r^t$ is the vector of price, where $r^t(i) = \frac{Price_t(stock_i)}{Price_{t-1}(stock_i)}$.
+		\item $f_t(w^t) = -\log(w^t r^t) $.
+		\item $\sum\limits_{t=1}^T f_t(w^t) = -\log(\Pi_{t= 1}^T (w^t r^t)) $.
+		\item $\min\limits_{w\in \Delta_n} \sum\limits_{t=1}^T f_t(w) = -\log(\max\limits_{w\in \Delta_n} \Pi_{t= 1}^T (w r^t)) $ = negative log wealth of best portfolio.
+	\end{itemize}
+	
+	In this example, basically the loss function is minimized when money is put into the stock whose value will grow higher at time $t$. 
+	
+	In addition, there exists an algorithm such that for any sequence $r^1, \cdots , r^t$, we can have that 
+	
+	\begin{equation*}
+		\sum\limits_{t=1}^T f_t(w^t) - \min\limits_{w \in \Delta_n} \sum\limits_{t=1}^T f_t(w) \leq n \log T.
+	\end{equation*}
+\end{example}
+
+\begin{example}[\bfseries Online Regression]
+	In this example, basically 
+	\begin{itemize}
+		\item $\K$ = $2$-norm ball $\Theta$.
+		\item $f_t(\theta) = (\theta x_t - y_t)^2$, $(x_t, y_t) \in (\R^n \times \R)$.
+	\end{itemize}
+\end{example}
+
+Online convex optimization is not an easy problem, it combines ideas from
+
+\begin{itemize}
+	\item Optimization
+	\item Statistical Learning
+\end{itemize}
+
+We have the following claim for (OCO) online convex optimization:
+
+\begin{claim}
+	OCO is harder than vanilla optimization.
+\end{claim}
+
+\begin{proof}
+	The goal of vanilla is to find the solution to $\arg\min\limits_{x\in \K} \Phi(x)$, where $\Phi(\cdot)$ is a convex function.
+	
+	To prove this claim, let's take any OCO algorithm $\alg$, and take the following procedures.
+	
+\begin{algorithm}
+	\floatname{algorithm}{}
+	\begin{algorithmic}
+		\STATE Initialize $x_1 \in \K$
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+			\STATE $x_t = \alg(f_1, \cdots, f_{t-1})$
+			\STATE Let $f_t(\cdot) = \Phi(\cdot)$ [or = $\langle \nabla \Phi(x_t), \cdot \rangle$]
+		\eindent
+		\STATE Output $\frac{1}{T} \sum\limits_{t=1}^T x_t = \bar{x_T}$.
+	\end{algorithmic}
+\end{algorithm}
+
+By this algorithm, we can show that $\Phi(\bar{x_T}) - \min\limits_{x \in \K} \Phi(x) \leq \frac{Regret_T(\alg)}{T}$, since
+
+\begin{equation*}
+	\begin{aligned}
+		\Phi(\bar{x_T}) & \leq \frac{1}{T} \sum\limits_{t=1}^T \Phi(x_t) \\
+		& = \frac{1}{T}  \sum\limits_{t=1}^T f_t(x_t) \\
+		& \leq \frac{1}{T}\min\limits_{x \in \K}  \sum\limits_{t=1}^T  f_t(x_t) +  \frac{Regret_T(\alg)}{T} \\
+		& \leq \frac{1}{T}\min\limits_{x \in \K}  \sum\limits_{t=1}^T  \Phi(x_t) +  \frac{Regret_T(\alg)}{T} \\
+		& =  \min\limits_{x \in \K}  \Phi(x_t) +  \frac{Regret_T(\alg)}{T}.
+	\end{aligned}
+\end{equation*}
+\end{proof}
+
+Therefore, if we can solve online convex optimization problem, then we can also solve vanilla optimization.
+
+Next, we will talk about Online-to-Batch Conversion, which use online optimization to solve batch minimization. The setting is following:
+
+\begin{itemize}
+	\item $X$ - Data Space.
+	\item $Y$ - Label Space.
+	\item $D$ - Distribution over $X \times Y$.
+	\item $\Theta \in \R^d$ - Bounded parameter space.
+	\item $l: \Theta \times X \times Y \to \R$ - Loss function and convex in $\Theta$.
+\end{itemize}
+
+We can pick any OCO algorithm $\alg$ and use it to generalize to batch minimization as following:
+
+\begin{algorithm}
+	\floatname{algorithm}{}
+	\begin{algorithmic}
+		\STATE Initialize $\theta_1 \in \Theta$
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE $\theta_t = \alg(f_1, \cdots, f_{t-1})$
+		\STATE Let $f_t(\cdot) = l(\cdot; (x_t, y_t))$
+		\eindent
+		\STATE Output $ \bar{\theta_t} =  \frac{1}{T} \sum\limits_{t=1}^T \theta_t$.
+	\end{algorithmic}
+\end{algorithm}
+
+By this generalization, we can have that
+
+\begin{theorem}
+	Let risk $R(\theta) = \EE_{(x,y) \in D} [l(\theta;(x,y))]$, then we can have
+	\begin{equation}
+		\EE[R(\bar{\theta_T})] - \min\limits_{\theta \in \Theta} R(\theta) \leq \EE[\frac{Regret_T(\alg)}{T}].
+	\end{equation}
+\end{theorem}
+
+Afterwards, we will introduce several algorithms in online gradient descent. The first one is called online gradient descent.
+
+\section{Online Convex Optimization Algorithm}
+\begin{algorithm}[H]
+	\caption{Online Gradient Descent}
+	\begin{algorithmic}
+		\STATE Initialize $x_1 \in \K$
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE $x_{t+1} = \Pi_{\K} (x_t - \eta_t\nabla f_t(x_t))$.
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+
+where $\Pi_{\K}(\cdot)$ is defined as the projection operator and $\Pi_{\K}(y) = \arg\min\limits_{x\in \K} ||y-x||_2$.
+
+This is a very simple algorithm similar to projected gradient algorithm, except that at each step, we use $f_t$ to calculate the gradient rather than a fixed $f$.
+
+The following convergence theorem is associated with online gradient descent:
+
+\begin{theorem}
+	Assume that $f_t$ is $G$-Lipschitz ($||\nabla f_t||\leq G$), and $\forall x, y\ \in D$, $||x - y||\leq D$. Then, with $\eta_t = \frac{D}{G\sqrt{t}}$, we can get that 
+	
+	\begin{equation}
+		Regret_T(OGD) \leq \frac{3}{2} GD\sqrt{T}.
+	\end{equation}
+\end{theorem}
+
+Before proving this theorem, we will first introduce a lemma about the projection operator.
+
+\begin{lemma}[\bfseries Pythagorean Theorem for Bregman Divergences]\label{pythagorean_lemma}
+	For any $x \in \K$, 
+	
+	\begin{equation*}
+	 	||x - \Pi_k(y)|| \leq ||x - y||.
+	\end{equation*}
+\end{lemma}
+
+Then, let's start proving the convergence of OGD.
+
+\begin{proof}
+	Let $x^* = \arg\min\limits_{x\in \K} \sum\limits_{t=1}^T f_t(x)$, and $\nabla_t = \nabla f_t(x_t)$.
+	
+	By the convexity of $f_t(\cdot)$, we know that 
+	
+	\begin{equation*}
+		f_t(x_t) - f_t(x^*) \leq \nabla_t^T (x_t - x^*).
+	\end{equation*}
+	
+	By lemma \ref{pythagorean_lemma} and the update function of OGD, we know that 
+	
+	\begin{equation*}
+		\begin{aligned}
+			||x_{t+1} - x^*||^2 & = || \Pi_{\K} (x_t - \eta_t\nabla f_t(x_t))  - x^*||^2 \\
+			& \leq || x_t - \eta_t\nabla f_t(x_t)  - x^*||^2  \\
+			& = || x_t - x^*||^2 + || \eta_t\nabla f_t(x_t)||^2 - 2(\eta_t\nabla f_t(x_t))^T( x_t -  x^*).
+		\end{aligned}
+	\end{equation*}
+	
+	Therefore, we can get that 
+	
+	\begin{equation*}
+		\begin{aligned}
+				f_t(x_t) - f_t(x^*) & \leq \nabla_t^T (x_t - x^*) \\
+									& \leq \frac{1}{2\eta_t} ( || x_t - x^*||^2 -  ||x_{t+1} - x^*||^2 ) + \frac{\eta_t}{2}| \nabla f_t(x_t)||^2 \\
+									& \leq \frac{1}{2\eta_t} ( || x_t - x^*||^2 -  ||x_{t+1} - x^*||^2 ) + \frac{\eta_t G^2}{2}
+		\end{aligned}
+	\end{equation*}
+	
+	Define $\frac{1}{\eta_0} = 0$, and by summing all terms we can have
+	
+	\begin{equation*}
+		\begin{aligned}
+			Reg_T & = \sum\limits_{i=1}^T (f_t(x_t) - f_t(x^*))\\
+					& \leq \sum\limits_{i=1}^T ( \frac{1}{2\eta_t} ( || x_t - x^*||^2 -  ||x_{t+1} - x^*||^2 ) + \frac{\eta_t G^2}{2}) \\
+					& = \frac{1}{2} \sum\limits_{i=1}^T || x_t - x^*||^2 (\frac{1}{\eta_t} -\frac{1}{\eta_{t-1}})  +  \sum\limits_{i=1}^T  \frac{\eta_t G^2}{2} \\
+					& =  \frac{|| x_t - x^*||^2}{2} \sum\limits_{i=1}^T  (\frac{1}{\eta_t} -\frac{1}{\eta_{t-1}})  + \frac{ G^2}{2}  \sum\limits_{i=1}^T  \eta_t \\
+					& = \frac{|| x_t - x^*||^2}{2} \frac{1}{\eta_T}  + \frac{ G^2}{2}  \sum\limits_{i=1}^T  \eta_t
+		\end{aligned}
+	\end{equation*}
+	
+	By letting $\eta_t = \frac{D}{G\sqrt{t}}$, we can have that
+	
+	\begin{equation*}
+		\begin{aligned}
+				Reg_T & \leq  \frac{|| x_t - x^*||^2}{2} \frac{1}{ \frac{D}{G\sqrt{T}}}  + \frac{ G^2}{2}  \sum\limits_{i=1}^T  \frac{D}{G\sqrt{t}} \\
+				& \leq \frac{D G\sqrt{T}}{2}   + \frac{ GD}{2}  \sum\limits_{i=1}^T  \frac{1}{\sqrt{t}}\\
+				& \leq \frac{D G\sqrt{T}}{2}   + GD  \sqrt{T} \\
+				& = \frac{3}{2}  GD  \sqrt{T}.
+		\end{aligned} 
+	\end{equation*}
+\end{proof}
+
+\begin{corollary}
+	Gradient Descent algorithm for minimization one convex function $f(\cdot)$ with respect to averaging converge at a rate of $O(\frac{GD}{\sqrt{T}})$.
+\end{corollary}
+
+It's surprise to find that the convergence rate of OGD is the same as normal gradient descent algorithm when they output the averaging.
+
+Next, we will talk about Stochastic Gradient Descent, its setting and convergence rate. We will see that we can use OGD to prove its convergence rate easily.
+
+In stochastic gradient descent, basically we want to minimize $\arg\min\limits_{x\in \K} f(x)$, where $f(x) = \EE_{\xi}[h(x;\xi)]$. The basic procedures in SGD is following:
+
+\begin{itemize}
+	\item Sample $\xi_t$ from data set.
+	\item $x_{t+1} \leftarrow x_t - \eta_t \nabla h(x_t; \xi_t)$.
+	\item Output $\bar{x_t} = \frac{1}{T} \sum\limits_{i=1}^T x_t$.
+\end{itemize}
+
+We can have the following claim about SDG:
+
+\begin{claim}
+	Stochastic Gradient Descent converges at $O(\frac{DG}{\sqrt{T}})$.
+\end{claim}
+
+\begin{proof}
+	Notice that
+	
+	\begin{equation*}
+		\begin{aligned}
+			\EE_{\xi_{1:t}} [f(\bar{x_T})] &\leq \frac{1}{T} \EE_{\xi_{1:t}} [ \sum\limits_{t=1}^T f(x_t)] \\
+			&  = \frac{1}{T} \EE_{\xi_{1:t}} [ \sum\limits_{t=1}^T  \EE[f(x_t)|\xi_1, \cdots , \xi_{t-1} ]]  \\ 
+			&  = \frac{1}{T} \EE_{\xi_{1:t}} [ \sum\limits_{t=1}^T  \EE[ \EE_{\xi}[h(x_t;\xi_{1:t})]|\xi_1, \cdots , \xi_{t-1} ]]  \\
+			&  = \frac{1}{T} \EE_{\xi_{1:t}} [ \sum\limits_{t=1}^T  \EE[ \EE_{\xi}[h(x_t;\xi_{t})]|\xi_1, \cdots , \xi_{t-1} ]]  \\
+			&  = \frac{1}{T} \EE_{\xi_{1:t}} [ \sum\limits_{t=1}^T  \EE[ h(x_t;\xi_{t})|\xi_1, \cdots , \xi_{t-1} ]]  \\
+		\end{aligned}
+	\end{equation*}
+	
+	Let $f_t(x) = h(x_t;\xi_t)$, then 
+	
+	\begin{equation*}
+	\begin{aligned}
+	\EE_{\xi_{1:t}} [f(\bar{x_T})] & \leq \frac{1}{T} \EE_{\xi_{1:t}} [ \sum\limits_{t=1}^T  \EE[ f_t(x_t)|\xi_1, \cdots , \xi_{t-1} ]]  \\ 
+	&= \EE_{\xi_{1:t}} [\frac{1}{T} \sum\limits_{t=1}^T  f_t(x_t)] \\
+	& \leq \EE_{\xi_{1:t}} [\frac{1}{T} \sum\limits_{t=1}^T  f_t(x^*)] + \frac{Regret_T(OGD)}{T} \\
+	& = f(x^*) + \frac{3DG}{2\sqrt{T}}.
+	\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Therefore, the convergence rate $\EE_{\xi_{1:t}} [f(\bar{x_T})] - f(x^*) \leq \frac{3DG}{2\sqrt{T}}$.
+
+
+We now conclude the three settings we talked about.
+
+\begin{itemize}
+	\item $D$ - some distribution on data.
+	\item $f(x, \xi)$ - a loss function of $x$ given data $\xi$.
+	\item $F(x)$ - $\EE_{\xi \in D} [f(x;\xi)]$.
+\end{itemize}
+
+Imagine now we have a sample $\hat{D} = \{\xi_{1:n}\}$ and the empirical loss function is defined as $\hat{F}(x) = \frac{1}{n} \sum\limits_{i=1}^n f(x;\xi_i)$.
+
+If the goal of learning is 
+
+\begin{equation*}
+	\textmd{minimize} \ \hat{F}(x),
+\end{equation*} 
+
+then its stochastic gradient descent.
+
+If the goal of optimization is 
+
+\begin{equation*}
+\textmd{minimize} \ F(x),
+\end{equation*} 
+
+then its online to batch minimization.
+
+
+Their procedure is almost the same:
+
+\begin{algorithm}
+	\floatname{algorithm}{}
+	\begin{algorithmic}
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE Sample $\xi_t \sim D$ (or $\hat{D}$)
+		\STATE $x_{t+1} = x_t - \eta_t\nabla f(x_t; \xi_t)$.
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+
+We have the following two claims for our algorithm.
+
+\begin{claim}\label{claim_online_batch}
+	Let $\bar{x_T} = \frac{1}{T} \sum\limits_{t=1}^T x_t$, then we have
+	
+	\begin{equation}
+		\EE_{\xi_{1:n}} [F(\bar{x_T}) - F(x^*)] \leq O(\frac{GD}{\sqrt{T}}).
+ 	\end{equation}
+\end{claim}
+
+\begin{corollary}
+	It is possible to get a high probability bound.
+\end{corollary}
+
+\begin{claim}\label{claim_sgd}
+	Let $\bar{x_T} = \frac{1}{T} \sum\limits_{t=1}^T x_t$, then we have
+	
+	\begin{equation}
+		\EE_{\xi_{1:n}} [\hat{F}(\bar{x_T}) - \hat{F}(x^*)] \leq O(\frac{GD}{\sqrt{T}}).
+	\end{equation}
+\end{claim}
+
+We have proven claim \ref{claim_sgd} before, therefore, we will only prove claim \ref{claim_online_batch} here.
+
+\begin{proof}
+	We can see that 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\EE_{\xi_{1:n}} [F(\bar{x_T}) - F(x^*)] &\leq \EE_{\xi_{1:n}} [\frac{1}{T}\sum\limits_{t=1}^T F(x_t) - F(x^*)] \\
+			&= \EE_{\xi_{1:n}} [\frac{1}{T}\sum\limits_{t=1}^T \EE_{\xi \sim D} [f(x_t;\xi) - f(x^*;\xi)]] \\
+			&= \EE_{\xi_{1:n}} [\frac{1}{T}\sum\limits_{t=1}^T \EE_{\xi_t} [f(x_t;\xi_t) - f(x^*;\xi_t)]] \\ &= \EE_{\xi_{1:n}} [\frac{1}{T}\sum\limits_{t=1}^T f(x_t;\xi_t) - f(x^*;\xi_t)] \\
+			& = \EE [\frac{Regret_T}{T}] \\
+			& \leq \frac{3GD}{2\sqrt{T}}.
+		\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Note that the proof is not algorithm specific. That is, any low-regret algorithm can help us prove the theorem. The proof can guarantee the convergence of order $\EE[\frac{Reg_T}{T}]$ for any algorithm, and $\EE[\frac{Reg_T}{T}]$ will be small for a low-regret algorithm.
+
+Another thing we need to consider is that we have shown that standard gradient descent converges at $O(\frac{GD}{\sqrt{T}})$, which is the same as SGD. Why is SGD better then?
+
+The answer is that in each iteration, standard gradient descent will take $O(n)$ time while SGD will only use constant time. The time complexity in each iteration is the reason why SGD overtakes standard gradient descent.
+
+Next, we will talk about a new online convex optimization algorithm, called Mirror Descent. The setting is following:
+
+\begin{itemize}
+	\item Given $\K \subset \R^d$ and a regularizer $R(\cdot)$.
+	\item $\K \subset int(dom(R))$
+	\item $R$ is $\lambda$-strongly convex (w.r.t $||\cdot||$).
+	\item Let $\nabla_t = \nabla f_t(x_t)$ at time $t$.
+\end{itemize}
+
+Then the algorithm is 
+
+\begin{algorithm}[H]
+	\caption{Mirror Descent}
+	\begin{algorithmic}
+		\STATE $x_1 \in \K$ arbitrary.
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+			\STATE $x_{t+1} = \arg\min\limits_{x\in \K} \eta_t \langle \nabla_t, x \rangle + D_R(x,x_t)$
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+where $D_R(x,x_t)$ is the Bregman Divergence 
+
+\begin{equation*}
+	D_R(x,y) = R(x) - R(y) - \langle \nabla R(y), x-y\rangle.
+\end{equation*}
+
+Since $R$ is $\lambda$-strongly convex, we know that $D_R(x,y) \geq \frac{\lambda}{2}||x-y||^2$.
+
+Let's break down the update function of mirror descent. The term $\langle \nabla_t, x \rangle$ tends to move away from gradient. For example, if gradient $\nabla_t = [1, -1]$, then $x$ would be $[-\infty, \infty]$. To avoid infinity, we introduce $D_R(x,x_t)$, which will increase if $x$ moves too far away from $x_t$. Therefore, overall we can reach a balance of both parts.
+
+Before proving its convergence, let's first introduce some lemmas.
+
+\begin{lemma}\label{MD_lemma1}
+	For any $x, y,z \in \K$, it holds that 
+	\begin{equation}
+		D_R(z,x) + D_R(x,y) - D_R(z,y) = \langle \nabla R(y) - \nabla R(x), z-x \rangle.
+	\end{equation}
+\end{lemma}
+
+\begin{proof}
+	By substituting $D_R(z,x)$ with the expression of Bregman Divergence, we can get the equality directly.
+\end{proof}
+
+\begin{lemma}[\bfseries First-order Optimal Condition]\label{MD_lemma2}
+If $x^* = \arg\min\limits_{x \in \K} \Phi(x)$, then $\forall \ u\in \K$, we have
+
+\begin{equation}
+\langle \nabla \Phi(x^*), u -x^* \rangle \geq 0.
+\end{equation}	
+\end{lemma}
+
+Let's denote $\Phi(x) = \eta_t \langle \nabla_t, x \rangle + D_R(x,x_t)$ and apply to mirror descent. In mirror descent, we have $ \nabla \Phi(x) = \eta_t \nabla_t + \nabla R(x) - \nabla R(x_t)$. Then by first-order optimal condition, we have that $\forall \ u \in \K$
+
+\begin{equation*}
+	\langle \eta_t \nabla_t + \nabla R(x_{t+1}) - \nabla R(x_t) , u - x_{t+1} \rangle \geq 0.
+\end{equation*}
+
+\begin{lemma}\label{MD_lemma3}
+	
+	Furthermore, notice that $\forall \ v,\gamma$, we have
+	
+	\begin{equation*}
+	\langle v, \gamma \rangle \leq ||v|| \cdot ||\gamma||_* = (\frac{1}{\sqrt{\lambda}} ||v||)(\sqrt{\lambda} ||\gamma||_*) \leq \frac{||v||^2}{2\lambda} + \frac{||\gamma||_*^2\lambda}{2} .
+	\end{equation*}
+	
+	The last inequality if Holder's inequality.
+\end{lemma}
+
+\begin{lemma}\label{MD_lemma4}
+	The following inequality holds for any $u \in \K$,
+	
+	\begin{equation*}
+	\eta_t (f_t(x_t) - f_t(u)) \leq \eta_t \langle \nabla_t, x_t -u \rangle \leq D_R(u,x_t) - D_R(u,x_{t+1}) + \frac{\eta_t^2}{2\lambda} ||\nabla_t||_*^2.
+	\end{equation*}
+\end{lemma}
+
+\begin{proof}
+	The first inequality $\eta_t (f_t(x_t) - f_t(u)) \leq \eta_t \langle \nabla_t, x_t -u \rangle $ is indicated by the convexity of $f$. Now let's look at the second inequality.
+	\begin{equation*}
+		\begin{aligned}
+			\eta_t\langle \nabla_t, x_t -u \rangle =&  \langle \nabla R(x_t) - \nabla R(x_{t+1})-\eta_t \nabla_t , u -x_{t+1}\rangle  \\
+													& -  \langle \nabla R(x_t) - \nabla R(x_{t+1})  , u -x_{t+1}\rangle  \\
+													& +  \langle \eta_t \nabla_t  , x_t -x_{t+1}\rangle.
+		\end{aligned}
+	\end{equation*}
+
+
+By Lemma \ref{MD_lemma2}, we know that $\langle \nabla R(x_t) - \nabla R(x_{t+1})-\eta_t \nabla_t , u -x_{t+1}\rangle \leq 0$. Therefore, we have
+
+\begin{equation*}
+	\begin{aligned}
+	\eta_t\langle \nabla_t, x_t -u \rangle \leq  
+	& -  \langle \nabla R(x_t) - \nabla R(x_{t+1})  , u -x_{t+1}\rangle  +  \langle \eta_t \nabla_t  , x_t -x_{t+1}\rangle \\
+	\textmd{(Lemma \ref{MD_lemma1})} = & D_R(u,x_t)  - D_R(u,x_{t+1}) - D_R(x_{t+1},x_t)    +  \langle \eta_t \nabla_t  , x_t -x_{t+1}\rangle \\
+	\textmd{(Lemma \ref{MD_lemma3})} \leq & D_R(u,x_t)  - D_R(u,x_{t+1}) - D_R(x_{t+1},x_t)    +   \frac{||\eta_t \nabla_t||_*^2}{2\lambda} + \frac{||x_t -x_{t+1}||^2\lambda}{2}\\
+	(\lambda-\textmd{Convexity of } D) \leq & D_R(u,x_t)  - D_R(u,x_{t+1})   +   \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda}.
+	\end{aligned}
+\end{equation*}
+\end{proof}
+After all these lemma, we come to this theorem
+
+\begin{theorem}
+	For Mirror Descent, for any $u \in \K$, let $\eta_1 ,\cdots , \eta_t$ be decreasing, and let $d^2 = \max\limits_{t= 1,\cdots T} D_R(u,x_t)$, then we have
+	 
+	\begin{equation}
+		\sum\limits_{t = 1}^T (f_t(x_t) - f_t(u)) \leq \frac{d^2}{\eta_T}+ \frac{1}{2\lambda} \sum\limits_{t=1}^T \eta_t ||\nabla_t||_*^2.
+	\end{equation}
+\end{theorem}
+
+\begin{corollary}
+	Let $\eta_t = \frac{d\sqrt{\lambda}}{\sqrt{\sum\limits_{s=1}^t ||\nabla_s||^2_*}}$, then
+	\begin{equation*}
+	Regret_T(MD) \leq 2 \frac{d}{\sqrt{\lambda}} \sqrt{\sum\limits_{t=1}^T ||\nabla_t||_*^2}.
+	\end{equation*}
+\end{corollary}
+
+\begin{proof}
+	By Lemma \ref{MD_lemma4}, we have that
+	\begin{equation*}
+		\begin{aligned}
+			\sum\limits_{t = 1}^T (f_t(x_t) - f_t(u)) & \leq \sum\limits_{t = 1}^T \frac{1}{\eta_t}(D_R(u,x_t)  - D_R(u,x_{t+1})   +   \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda}) \\
+			& = \frac{1}{\eta_1} D_R(u,x_1) - \frac{1}{\eta_T} D_R(u, x_{t+1})  + \sum\limits_{t = 1}^{T-1} (\frac{1}{\eta_{t+1}} - \frac{1}{\eta_t}) D_R(u,x_{t+1}) + \sum\limits_{t = 1}^T \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda} \\
+			& \leq \frac{1}{\eta_1} d^2 + \sum\limits_{t = 1}^{T-1} (\frac{1}{\eta_{t+1}} - \frac{1}{\eta_t}) D_R(u,x_{t+1}) + \sum\limits_{t = 1}^T \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda}  \\
+			& \leq \frac{1}{\eta_1} d^2 + d^2\sum\limits_{t = 1}^{T-1} (\frac{1}{\eta_{t+1}} - \frac{1}{\eta_t})  + \sum\limits_{t = 1}^T \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda}  \\
+			& \leq \frac{d^2}{\eta_1}  + \frac{d^2}{\eta_T} - \frac{d^2}{\eta_1} + \sum\limits_{t = 1}^T \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda}  \\
+			& = \frac{d^2}{\eta_T}  + \sum\limits_{t = 1}^T \frac{\eta_t^2|| \nabla_t||_*^2}{2\lambda}
+		\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Online mirror descent can extend to many other online convex optimization algorithms, let's see two examples.
+
+\begin{example}
+	Let $\K$ be any convex set, and $R(x) = \frac{1}{2} ||x||^2$. By the update function of OMD, we can get that
+	
+	\begin{equation*}
+		\begin{aligned}
+		x_{t+1} &= \arg\min\limits_{x\in \K} \eta_t\langle x,\nabla_t \rangle + D_R(x,x_t) \\
+		& = \Pi_{\K}(x_t - \eta \nabla_t)
+		\end{aligned}		
+	\end{equation*}
+	
+	which is online gradient descent.
+\end{example}
+
+\begin{example}
+	Let $K = \Delta_n$ and $R(x) = \sum\limits_{i=1}^n x_i \log x_i$. Then
+	
+	\begin{equation*}
+	x_{t+1} = \arg\min\limits_{x\in \K} \eta_t \langle x, \nabla_t \rangle + \sum\limits_{i=1}^n x_i \log \frac{x_i}{x_t(i)}.
+	\end{equation*}
+	
+	By first order optimal condition, we can have that $(\eta_t \nabla_t)_i = \log\frac{x(i)}{x_t(i)}$, which means 
+	
+	\begin{equation*}
+	x(i) = x_t(i) \exp(-\eta_t \nabla_t(i)) /Z.
+	\end{equation*}
+	
+	It turns out that it is just exponential weights algorithm.
+	
+	Why do we choose this function $R$? Because entropy function is $1$-strongly convex with respect to $||\cdot||_1$. Then $d^2 = \max\limits_{t} D_R (u,x_t) \leq \log n$ and 
+	
+	\begin{equation*}
+		Regret_T \leq \log n \sqrt{\sum\limits_{t=1}^T ||\nabla_t||^2_{\infty}}.
+	\end{equation*}
+\end{example}
+
+Finally, we will talk about the last algorithm in online convex optimization: Follow the Regularized Leader algorithm.
+
+
+\begin{algorithm}[H]
+	\caption{Follow the Regularized Leader}
+	\begin{algorithmic}
+		\STATE $x_1 \in \K$ arbitrary.
+		\STATE Regularizer $R(x)$
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE (V1): $x_{t+1} = \arg\min\limits_{x\in \K} \eta \sum\limits_{s=1}^t f_s(x) + R(x)$
+		\STATE (V2): $x_{t+1} = \arg\min\limits_{x\in \K}  \eta \sum\limits_{s=1}^t \langle \nabla f_s (x_s), x \rangle + R(x)$
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{fact}$ $
+	\begin{enumerate}
+		\item If $f_s(x)$ is linear in $x$, then FTL can have linear regret.
+		\item The second version of FTRL is just OMD al long as $x_t \in int(\K)$.
+	\end{enumerate}
+\end{fact}
+
+Next we will prove the second fact.
+
+\begin{proof}
+	If $x_t \in int(\K)$, then for FTRL we have
+	\begin{equation*}
+		\begin{aligned}
+			\nabla R(x_{t+1})  = - \eta \sum\limits_{s=1}^t \nabla f_s(x_s)  .
+		\end{aligned}
+	\end{equation*}
+
+For OMD, we have
+
+	\begin{equation*}
+		\begin{aligned}
+			\nabla R(x_{t+1}) &  = \nabla R(x_t) - \eta \nabla_t f_t(x_t) \\
+							 & = \nabla R(x_{t-1}) - \eta (\nabla_t f_t(x_t) + \nabla_t f_{t-1}(x_{t-1})) \\
+							 & \cdots \\
+							 & = - \eta \sum\limits_{s=1}^t \nabla f_s(x_s) .
+		\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Therefore, OMD is just FTRL when $x \in \K$. This also shows that the convergence rate of FTRL is as good as that of OMD.
+
+This concludes our discussion about online convex optimization. Next, we will discuss Multi-Armed Bandit, which tries to balance exploration and exploitation.
+
 \end{document}
