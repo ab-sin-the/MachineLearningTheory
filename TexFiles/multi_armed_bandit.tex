@@ -2,4 +2,473 @@
 
 \begin{document}
 \chapter{Multi-Armed Bandit}
+
+In "full information" setting, in addition to the strategy the player takes, he can also computes the loss of alternative action. This is not the case in Multi-Armed Bandit setting. In Bandit, feedback is only limited to the selected action that user takes. The protocol is following:
+
+
+\begin{algorithm}
+	\floatname{algorithm}{}
+	\begin{algorithmic}
+		\STATE Suppose that there are $n$ actions.
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE Algorithm selects $p^t \in \Delta_n$.
+		\STATE Nature chooses $l^t \in [0,1]^n$.
+		\STATE Algorithm samples $i_t \sim p^t$.
+		\STATE Observe only $l^t_{it}$ and update based on it.
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+The Regret is defined as $Regret_T = \sum\limits_{t=1}^T l^t_{it} - \min\limits_{i=1,\cdots, n} \sum\limits_{t=1}^T l^t_{i}$. Since $i_t$ is a random variable sampled from distribution $p^t$, the regret is also a random variable. Therefore, in this setting we care about the expectation of regret as
+
+\begin{equation*}
+	\begin{aligned}
+		\EE [Regret_T] = \EE [\sum\limits_{t=1}^T l^t_{it} - \min\limits_{i=1,\cdots, n} \sum\limits_{t=1}^T l^t_{i}].
+	\end{aligned}
+\end{equation*}
+
+This expectation is taken over all randomness in the algorithm.
+
+Next, we will describe an algorithm that could achieve good regret bound called EXP3 Algorithm.
+
+\begin{algorithm}[H]
+	\caption{EXP 3}
+	\begin{algorithmic}
+		\STATE Initialize $w_1^1,\cdots, w_n^1 = 1$
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE $p^t = \frac{w^t}{||w^t||_1}$
+		\STATE Sample $i_t \sim p$, observe $l_{it}^t$.
+		\STATE $\hat{l^t} = [0,0,0,\cdots, \frac{l^t_{it}}{p_i^t}, 0,\cdots,0]$.
+		\STATE For any $i$, $w_i^{t+1} = w_i^t \exp(-\eta \hat{l_i^t})$.
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+We can see that intuitively, this algorithm looks very similar with Exponential Weights Algorithm in Hedge's setting, except that since we have no idea about the loss of alternative choice, we set these losses to zero. Therefore, we will only update the weight of our choice at one time. This is also the difference between full information setting and bandit setting.
+
+One thing that should be noticed is that $\hat{l^t}$ is an unbiased estimator of $l^t$.
+
+\begin{equation}
+	\begin{aligned}
+		\EE_{i_t \sim p^t} [\hat{l^t}] & = \sum\limits_{i=1}^n p_i^t \cdot  [0,0,0,\cdots, \frac{l^t_{it}}{p_i^t}, 0,\cdots,0] \\
+									   & = \sum\limits_{i=1}^n [0,0,0,\cdots, l^t_{it}, 0,\cdots,0] \\
+									   & = [l^t_{1t},\cdots, l^t_{it}, \cdots,l^t_{nt}]  \\
+									   & = l^t.
+	\end{aligned}
+\end{equation}
+
+In addition, the covariance matrix of $\hat{l^t}$ is 
+
+\begin{equation}
+	CoVar(\hat{l^t}) = O(diag(\frac{1}{p_1^t}, \cdots, \frac{1}{p_n^t})).
+\end{equation}
+
+Before proving the theorem, lets first proving a lemma that would be used.
+
+\begin{lemma}
+	Let $X$ be a random variable and $X \in [0,1]$, then 
+	
+	\begin{equation}
+		\log \EE[exp(-sX)] \leq -s\EE[X] + \frac{s^2}{2} \EE[X].	
+	\end{equation}
+\end{lemma}
+
+\begin{proof}
+	Let $X$ be a random variable $\geq 0$, then we have the following two inequalities.
+	\begin{enumerate}
+		\item $\log (1+X) \leq X$.
+		\item $\exp(-sX) \leq -sX + \frac{s^2}{2}X^2 + 1$
+	\end{enumerate}
+
+	Therefore, 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\log(\EE[\exp(-sX)]) & \leq \log(\EE [1 -sX + \frac{s^2}{2}X^2]) \\
+								 & = \log(1 + \EE[-sX + \frac{s^2}{2}X^2]) \\
+								 & \leq \EE[-sX + \frac{s^2}{2}X^2] \\
+								 & = -s \EE[X] + \frac{s^2}{2} \EE[X^2].
+		\end{aligned}
+	\end{equation*}
+\end{proof}
+
+Then, we have the following theorem about the convergence of EXP3 Algorithm. 
+
+\begin{theorem}
+	For any $i$, it has 
+	\begin{equation}
+	 \EE[\sum\limits_{t=1}^T p^t\cdot l^t - \sum\limits_{t=1}^T l_i^t] \leq \frac{\log n}{\eta} + \frac{\eta}{2} Tn.
+	\end{equation}	
+\end{theorem}
+
+
+Since we sample $i_t$ randomly from $p^t$, then the expectation of $l_{it}$ is 
+
+\begin{equation*}
+\EE[l_{it}] = \sum\limits_{i=1}^n p_i l^t_{i} = p^t \cdot l^t.
+\end{equation*} 
+
+Therefore, for EXP 3, it means that $Regret_T \leq \frac{\log n}{\eta} + \frac{\eta}{2} Tn$.
+
+
+\begin{corollary}
+	For $\eta = \sqrt{\frac{2\log n}{T}}$, we have that $\EE[Regret_T] \leq \sqrt{2Tn\log n}$.
+\end{corollary}
+
+This regret bound is almost the same as EWA algorithm where we have full information.
+
+\begin{proof}
+	Similar to the proof of EWA algorithm, let $\Phi_t = - \frac{1}{\eta} \log (\sum\limits_{i=1}^n w_i^t)$.
+	
+	Notice that 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\Phi_{t+1} - \Phi_t & = -\frac{1}{\eta} \log (\frac{\sum\limits_{i=1}^n w_i^{t+1}}{\sum\limits_{i=1}^n w_i^t}) \\
+								& = -\frac{1}{\eta} \log (\frac{\sum\limits_{i=1}^n w_i^{t} \exp(-\eta \hat{l_i^t})}{\sum\limits_{i=1}^n w_i^t}).
+		\end{aligned}
+	\end{equation*}
+	
+	Let $X$ be a random variable and $P(X = \hat{l_i^t}) = \frac{w_i^t}{\sum\limits_{i=1}^n w_i^{t}}$. Next, we can have that
+	
+	\begin{equation*}
+		\begin{aligned}
+		\Phi_{t+1} - \Phi_t & = -\frac{1}{\eta} \log (\EE[\exp(-\eta X)]) \\
+							& \geq -\frac{1}{\eta} (-\eta \EE[X] + \frac{\eta^2}{2} \EE[X]) \\
+							& = \EE[X] - \frac{\eta}{2} \EE[X^2] \\
+							& = \sum\limits_{i=1}^n \frac{w_i^t}{\sum\limits_{j=1}^n w_j^{t}}  \hat{l_i^t} - \frac{\eta}{2} \sum\limits_{i=1}^n \frac{w_i^t}{\sum\limits_{j=1}^n w_j^{t}}  (\hat{l_i^t})^2 \\
+							& = p^t \hat{l^t} - \frac{\eta}{2} \sum\limits_{i=1}^n p_i^t (\hat{l_i^t})^2.
+		\end{aligned}
+	\end{equation*}
+	
+	The above steps are quite similar to that of EWA algorithm. Next, we will try to estimate $\EE [\Phi_{t+1} - \Phi_t]$.
+	
+	Following above deduction, we have that
+	
+	\begin{equation*}
+		\begin{aligned}
+			 \EE_{i_t\sim p_t} [\Phi_{t+1} - \Phi_t | i_1, \cdots, i_{t-1}] 
+								  & \geq \EE_{i_t\sim p_t} [p^t \hat{l^t} - \frac{\eta}{2} \sum\limits_{i=1}^n p_i^t (\hat{l_i^t})^2] \\
+							(p_{i} = 0 \textmd{ for } i \neq i_t)	  & \geq \EE_{i_t\sim p_t} [p^t \hat{l^t} - \frac{\eta}{2} p_{it}^t (\hat{l_{it}^t})^2] \\
+							 & \geq \EE_{i_t\sim p_t} [p^t \hat{l^t} - \frac{\eta}{2} p_{it}^t (\frac{l^t_{it}}{p_{it}^t})^2] \\
+							 (\textmd{Unbaised Estimator}) & \geq p^t \cdot l^t -  \EE_{i_t\sim p_t}[\frac{\eta}{2} p_{it}^t (\frac{l^t_{it}}{p_{it}^t})^2] \\
+							 & \geq p^t \cdot l^t -  \sum\limits_{i_t=1}^n p^t_{it} [\frac{\eta}{2} p_{it}^t (\frac{l^t_{it}}{p_{it}^t})^2] \\
+		 					 & \geq p^t \cdot l^t -  \frac{\eta}{2} \sum\limits_{i_t=1}^n  (l^t_{it})^2] \\
+		 					(l^t_{it} \leq 1)  &  \geq p^t \cdot l^t -  \frac{\eta n T}{2}.
+		\end{aligned}
+	\end{equation*}
+	
+	After all these steps, let consider 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\EE [\Phi_{T+1} - \Phi_1] & =  \EE [ \sum\limits_{t=1}^T(\Phi_{t+1} - \Phi_t)] \\
+									  & =   \EE [ \sum\limits_{t=1}^T \EE_{i_t\sim p_t} [\Phi_{t+1} - \Phi_t | i_1, \cdots, i_{t-1}]] \\
+									  & \geq \EE [ \sum\limits_{t=1}^T p^t \cdot l^t -  \frac{\eta n }{2} ] 
+		\end{aligned}
+	\end{equation*}
+	
+	Then, we need to bound $\Phi_{T+1} - \Phi_1$. Notice that 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\Phi_{T+1} - \Phi_1 & = -\frac{1}{\eta} \log (\sum\limits_{i=1}^n \exp(-\eta \sum\limits_{t=1}^T \hat{l_i^t})) + \frac{1}{\eta} \log n \\
+								& \leq -\frac{1}{\eta} \log (\exp(-\eta \sum\limits_{t=1}^T\hat{l_*})) + \frac{1}{\eta} \log n \\
+								& \leq \sum\limits_{t=1}^T\hat{l_*} + \frac{1}{\eta} \log n.
+		\end{aligned}
+	\end{equation*}
+	
+	Therefore, 
+	
+	\begin{equation*}
+		\EE [\Phi_{T+1} - \Phi_1] \leq \EE [\sum\limits_{t=1}^T\hat{l_*} + \frac{1}{\eta} \log n].
+	\end{equation*}
+	
+	Combine above, we can then get that 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\sum\limits_{t=1}^T p^t \cdot l^t -  \frac{\eta n T }{2}  & \leq \sum\limits_{t=1}^T\hat{l_*} + \frac{1}{\eta} \log n .
+		\end{aligned}
+	\end{equation*}
+	
+	Since $\sum\limits_{t=1}^T p^t \cdot l^t = \EE[l_{it}^t]$, then
+	
+	\begin{equation*}
+		\begin{aligned}
+			\EE[l_{it}^t] - \sum\limits_{t=1}^T\hat{l_*} \leq   \frac{\eta n T}{2}   + \frac{1}{\eta} \log n .
+		\end{aligned}
+	\end{equation*}
+	
+	Therefore, we can get that 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\EE[Regret_T] \leq   \frac{\eta n T }{2}   + \frac{1}{\eta} \log n .
+		\end{aligned}
+	\end{equation*}
+	
+\end{proof} 
+
+\begin{remark}
+	The bound $O(\sqrt{T n\log n})$ is not the best possible bound for EXP 3. If we can combine Tsallis entropy with mirror descent, we can reach a smaller bound as $O(\sqrt{Tn})$.
+\end{remark}
+
+Now that we have finished the discussion about multi-armed bandit, let's go deeper into the setting of Stochastic Bandits Setting. The setting is following:
+
+\begin{itemize}
+	\item We have $n$ distributions $D_1,\cdots , D_n$, each with $\EE_{X\sim D_i} [X] = \mu_i$.
+	\item Assume these distribution are subgaussian with proxy variance $1$ and $\mu_i - \mu_j <1$.
+	\item For each round $t$, algorithm picks $i_t \in [n]$, and then observes gain $x^t_{it}\sim D_{it}$.
+	\item Let $i^* = \arg\max\limits_i \mu_i$.
+	\item Define the regret at time $T$ as $Regret_T=\sum\limits_{t=1}^T(\mu_{i*} - x^t_{it})$.
+	\item Assume without loss of generality, $i^*=1$.
+	\item Let $\Delta_i = \mu_1 - \mu_i$, for $i=2,\cdots,n$.
+	\item The expected regret of some algorithm choosing $i_1,\cdots,i_T$ is then 
+	\begin{equation*}
+	\begin{aligned}
+		\EE[Regret_T] & = \EE[\sum\limits_{t=1}^T (\mu_1-\mu_{it})] \\
+		& =\EE[\sum\limits_{i=1}^n N_i^T \Delta_i]
+	\end{aligned}
+	\end{equation*}
+	
+	where $N_i^t = \sum\limits_{s=1}^t \mathbf{1}[i_s = i]$, which is the number of times bandit $i$ is chosen.
+\end{itemize}
+
+Notice that this setting is very similar to the previous multi-armed bandit setting. Actually, it is a special case of multi-armed bandit setting, where the Nature chooses the loss (in this case, gain) vector based on $n$ subgaussian distributions.
+
+Let's see a simple algorithm in this setting first.
+
+\pagebreak
+
+\begin{algorithm}[H]
+	\caption{Simple Algorithm in Stochastic Bandit Setting}
+	\begin{algorithmic}
+		\STATE Assume $\Delta_* = \min\limits_{i=2,\cdots,n} \Delta_i$ is known.
+		\STATE Let $K = \lceil \frac{4 \log(nT)}{\Delta_*^2} \rceil$
+		\STATE For $t = 1,\cdots ,T$:
+		\bindent 
+		\STATE If $t\in [(i-1)K, iK]$
+		\bindentt
+				\STATE $i_t = i$ (explore)
+		\eindentt
+		\STATE Else
+		\bindentt
+				\STATE $i_t = \arg\min\limits_{i} \hat{\mu_i}$, where $\hat{\mu_i} = \frac{1}{K} \sum\limits_{t=(i-1)K}^{iK}x_i^t$. (exploit) 
+		\eindentt
+		\eindent
+	\end{algorithmic}
+\end{algorithm}
+
+Basically, what this algorithm does is that it will first try each bandit $K$ times (total $nK$ times). Afterwards, it will calculate the average of gain from each bandit, and stick to the best gain bandit afterwards.
+
+One problem of this algorithm is that it assumed that $\Delta_* = \min\limits_{i=2,\cdots n} \Delta_i$ is known, which is not realistic in most cases. Before we go into a better algorithm that can remove this assumption, let's first give a claim about this algorithm.
+
+\begin{claim}
+	The expectation of regret of this simple algorithm is bounded.
+	
+	\begin{equation}
+		\EE[Regret_T(\textmd{Simple Algorithm})] \leq \sum\limits_{i=1}^n \frac{4 \Delta_i \log Tn}{\Delta_*^2} + O(1).
+	\end{equation}
+\end{claim}
+
+\begin{proof}
+	Let's consider two cases:
+		\begin{enumerate}
+			\item For $t > nK$, $i_t = 1$ (Find the best bandit after $nK$).
+			\item For $t > nK$, $i_t \neq 1$ (Not find the best bandit after $nK$).
+		\end{enumerate}
+	
+	Then the expectation of regret is bounded by
+	
+	\begin{equation*}
+		\begin{aligned}
+			\EE[Regret_T] &= \EE[\sum\limits_{i=2}^n N_i^T \Delta_i] \\
+						  &\leq \EE[\sum\limits_{i=2}^n N_i^T \Delta_i | Found] \Pr(Found) + \EE[\sum\limits_{i=2}^n N_i^T \Delta_i |Not \ Found] \Pr(Not \ Found)  \\
+						  &\leq (K \sum\limits_{i=2}^n \Delta_i) \Pr(Found) + \EE[\sum\limits_{i=2}^n N_i^T \Delta_i |Not \ Found] \Pr(Not \ Found) \\
+  						  &\leq K \sum\limits_{i=2}^n \Delta_i  + \EE[\sum\limits_{i=2}^n N_i^T \Delta_i |Not \ Found] \Pr(Not \ Found) \\
+ 						  &\leq K \sum\limits_{i=2}^n \Delta_i  + T \Pr(Not \ Found) \\
+ 						  &\leq \sum\limits_{i=2}^n  \frac{4\Delta_i \log(nT)}{\Delta_*^2} + 1 + T \Pr(Not \ Found) 
+		\end{aligned}
+	\end{equation*}
+	
+	What remains to do is to bound $\Pr(Not\ Found)$. We will utilize Hoeffding Inequality in our proof. Notice that
+	
+	\begin{equation*}
+		\begin{aligned}
+			\Pr(Not\ Found) &= \Pr(\exists i \in [2,\cdots,n], \hat{\mu_i} > \hat{\mu_1}) \\
+			&\leq \sum\limits_{i=2}^n \Pr (\hat{\mu_i} > \hat{\mu_1}) \\
+			&\leq \sum\limits_{i=2}^n \Pr (\hat{\mu_i}  - \mu_i \geq \frac{\Delta_i}{2} \ or \ \mu_1 - \hat{\mu_i}  \geq \frac{\Delta_i}{2}) \\
+			&\leq \sum\limits_{i=2}^n (\Pr (\hat{\mu_i}  - \mu_i \geq \frac{\Delta_i}{2}) +  \Pr(\mu_1 - \hat{\mu_i}  \geq \frac{\Delta_i}{2})) \\
+			&\leq \sum\limits_{i=2}^n (\Pr (\hat{\mu_i}  - \mu_i \geq \frac{\Delta_*}{2}) +  \Pr(\mu_1 - \hat{\mu_i}  \geq \frac{\Delta_*}{2})) \\
+			&\leq \sum\limits_{i=2}^n (\exp(-\frac{2K^2 \Delta_*^2 }{4K}) +  \exp(-\frac{2K^2 \Delta_*^2 }{4K})) \\
+			&\leq \sum\limits_{i=2}^n 2(\exp(-\frac{K \Delta_*^2 }{2})  \\
+			&\leq 2(n-1)\exp(-\frac{K \Delta_*^2 }{2}) \\
+			&\leq 2(n-1)\exp(-\frac{ \frac{4 \log(nT)}{\Delta_*^2} \Delta_*^2 }{2}) \\
+			&\leq 2(n-1)\exp( \log(\frac{1}{n^2T^2})) \\
+			&= 2(n-1)(\frac{1}{n^2T^2}) \\
+			& \leq \frac{1}{T}.
+		\end{aligned}
+	\end{equation*}
+	
+	Therefore, we can have that 
+	\begin{equation*}
+	\EE[Regret_T(\textmd{Simple Algorithm})] \leq \sum\limits_{i=2}^n  \frac{4\Delta_i \log(nT)}{\Delta_*^2} + 1 + T \Pr(Not \ Found) \leq  \sum\limits_{i=1}^n \frac{4 \Delta_i \log Tn}{\Delta_*^2} + O(1)	
+	\end{equation*}
+\end{proof}
+
+	This finishes our discussion about this simple algorithm. Again, it assumes that $\Delta_*$ is known, which cannot be reached in most cases. To remove this assumption. let's see an advanced algorithm called UCB (upper common bound algorithm).
+	
+	\begin{algorithm}[H]
+		\caption{Upper Common Bound Algorithm}
+		\begin{algorithmic}
+			\STATE Let $N_i^t = \sum\limits_{s=1}^{t-1} \mathbf{1} [I_s = i]$ and $\hat{\mu_i}^t = \frac{1}{N_i^t} [\sum\limits_{s=1}^{t-1} \mathbf{1}[I_s = i] x_i^t]$ (empirical average reward of bandit $i$).
+			\STATE Let $UCB_i^t = \hat{\mu_i}^t + \sqrt{\frac{2\log 1 /\delta}{N_i^t}}$ (empirical average reward + exploration bonus).
+			\STATE At each time $t$, select $I_t = \arg\max\limits_{i=1\cdots n} UCB_i^t$.
+		\end{algorithmic}
+	\end{algorithm}
+	
+	We have the following claim for $UCB$.
+	
+	\begin{claim}\label{UCB_claim_1}
+		\begin{equation}
+			\Pr(\mu_i > UCB_i^t) \leq \delta.
+		\end{equation}
+	\end{claim}
+
+	\begin{proof}
+		The proof is again based on Hoeffding Inequality
+		
+		\begin{equation*}
+			\begin{aligned}
+					\Pr(\mu_i > UCB_i^t) & = \Pr(\mu_i >\hat{\mu_i}^t + \sqrt{\frac{2\log 1 /\delta}{N_i^t}}) \\
+										 & = \Pr(\mu_i - \hat{\mu_i}^t > \sqrt{\frac{2\log 1 /\delta}{N_i^t}}) \\
+									(Hoeffding)&  \leq \exp(-\frac{2(N_i^t)^2 (\sqrt{\frac{2\log 1 /\delta}{N_i^t}})^2 }{4N_i^t } )\\
+									& = \exp(-\frac{N_i^t (\frac{2\log 1 /\delta}{N_i^t}) }{2 }) \\
+									& = \exp(-\log 1 /\delta )\\
+									& = \delta.
+			\end{aligned}
+		\end{equation*}
+	\end{proof}
+
+	This claim shows that $	\Pr(\mu_i < UCB_i^t) > 1- \delta$. It means that $UCB$ has high probability ($1-\delta$) to overestimate $\mu_i$.
+	
+	Let's define $K_i = \lceil \frac{8 \log 1 / \delta}{\Delta_i^2} \rceil$, we need to show that the probability of $N_i > K_i$ is very small. That is, only with small probability will bad arms be pulled very often.
+	
+	To bound the probability, let's define a good case for arm $i$ as
+	
+	\begin{equation*}
+		G_i = \{ \mu_1 > UCB_1^t, \forall t = 1,\cdots, T\} \wedge \{\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} < \mu_1 \},
+	\end{equation*}
+	
+	where
+	\begin{equation*}
+	\hat{\mu_i}^{(K_i)} = 
+	\begin{cases}
+	\frac{N_i^{T+1} \hat{\mu_i}^{T+1} + \sum\limits_{j=1=1}^{N_i^{T+1} - K} Y_j}{K}, & \textmd{where } Y_j \sim D_i \\
+	\hat{\mu_i}^t &\textmd{ for first t such that } N_i^t = K.
+	\end{cases}
+	\end{equation*}
+	
+	Basically, $\hat{\mu_i}^{(K_i)}$ is the empirical average of reward from arm $i$ when it is sampled $K_i$ times. Therefore, the good case states that the UCB of the best arm estimates its true expectation and the UCB of arm $i$ when its sampled $K_i$ times is smaller than the true expectation of arm $1$.
+	
+	
+	Using this, we can have the following claim.
+	
+	\begin{claim}
+		If $G_i$ is true, then $N_i^{T+1} \leq K_i$.
+	\end{claim}
+
+	\begin{proof}
+		Assume towards contradiction, there exists an arm $i$ such that $N_i^{T+1} > K_i$. Let be the final round such that $N_i^t = K_i$, which means $N_i^{t+1} = K_i +1$ and $I_t = i$.
+		
+		Then, by $G_i$, we know that
+		
+		\begin{equation*}
+			\begin{aligned}
+				UCB_1^t > \mu_1 & > \hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \\
+								& =  \hat{\mu_i}^{t} +  \sqrt{\frac{2\log 1/ \delta}{N_i^t}} \\
+								& = UCB_i^t.
+			\end{aligned}
+		\end{equation*}
+		
+		By the update function, we know that at $t$, the player will not choose arm $i$ since $UCB_i^t$ is not the largest one. This reaches an contradiction that the player will pick arm $i$ at $t$. Thus $N_i^{T+1} \leq K_i$.
+	\end{proof}
+
+	Using this, we can give the following theorem about UCB algorithm.
+	
+	\begin{theorem}
+		For $\delta^2 = \frac{1}{(T+1)^2}$, it holds that 
+			\begin{equation}
+				\EE[Regret_T(UCB)] \leq \sum\limits_{i=2}^n \frac{16 \log T}{\Delta_i} + O(\sum\limits_{i=2}^n \Delta_i).
+			\end{equation}
+	\end{theorem}
+
+	\begin{proof}
+		Notice that 
+		\begin{equation*}
+			\begin{aligned}
+				\EE[N_i^{T+1}] & = \EE[N_i^{T+1} | G_i] \Pr(G_i) + \EE[N_i^{T+1} | \neg G_i] \Pr(\neg G_i)\\
+							   & \leq K_i +  \EE[N_i^{T+1} | \neg G_i] \Pr(\neg G_i) \\
+							   & \leq K_i + T  \Pr(\neg G_i).
+			\end{aligned}
+		\end{equation*}
+		
+		Then, let's try to bound $\Pr(\neg G_i)$. Notice that 
+		\begin{equation*}
+			\neg G_i = \{ \mu_1 \leq UCB_1^t, \exists t = 1,\cdots, T\} \vee \{\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 \}.
+		\end{equation*}		
+		
+		Then, we know that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\Pr(\neg G_i) & \leq \Pr(\mu_1 \leq UCB_1^t, \exists t = 1,\cdots, T) + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
+							  & \leq \sum\limits_{s=1}^t \Pr(\mu_1 \leq UCB_1^s) +   \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
+							  (\textmd{Claim \ref{UCB_claim_1}})\ & \leq t\delta + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
+							  & = t\delta + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_i + \Delta_i ) \\
+							  & = t\delta + \Pr(\mu_i  - \hat{\mu_i}^{(K_i)} \leq  \sqrt{\frac{2\log 1/ \delta}{K_i}} - \Delta_i ) \\
+			\end{aligned}
+		\end{equation*}
+		
+		Since $K_i = \lceil \frac{8 \log 1 / \delta}{\Delta_i^2} \rceil $, we can have that
+		
+		\begin{equation*}
+			\begin{aligned}
+				\Pr(\mu_i  - \hat{\mu_i}^{(K_i)} \leq  \sqrt{\frac{2\log 1/ \delta}{K_i}} - \Delta_i ) & = \Pr(\mu_i  - \hat{\mu_i}^{(K_i)} \leq  \sqrt{\frac{2\log 1/ \delta}{ \frac{8 \log 1 / \delta}{\Delta_i^2} }} - \Delta_i ) \\
+				& = \Pr(\mu_i  - \hat{\mu_i}^{(K_i)} \leq  \sqrt{\frac{\Delta_i^2}{4 }} - \Delta_i ) \\
+				& = \Pr(\mu_i  - \hat{\mu_i}^{(K_i)} \leq  - \frac{\Delta_i}{2} ) \\
+		(Hoeffding) \ & \leq \exp(-\frac{K_i (-\frac{\Delta_i}{2})^2}{2}) \\
+					& = \exp(-\frac{K_i \Delta_i^2}{8}) \\
+					& \leq \exp(-\frac{\frac{8 \log 1 / \delta}{\Delta_i^2} \Delta_i^2}{8}) \\
+					& \leq \exp(-\log 1/\delta)\\
+					& = \delta.
+			\end{aligned}
+		\end{equation*}
+		
+		Put all these together, we can have that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\EE[Regret_T] & = \sum\limits_{i=2}^n \Delta_i \EE[N_i^{T+1}] \\	
+							  & \leq \sum\limits_{i=2}^n \Delta_i (K_i + T \Pr(\neg G_i)) \\
+							  & \leq \sum\limits_{i=2}^n \Delta_i (K_i + T (T\delta + \delta)) \\
+							  &\leq  \sum\limits_{i=2}^n \Delta_i (\frac{8 \log 1 / \delta}{\Delta_i^2} + T (T\delta + \delta)) \\
+							  & \leq  \sum\limits_{i=2}^n (\frac{8 \log 1 / \delta}{\Delta_i} + T (T\delta + \delta)\Delta_i) .
+			\end{aligned}
+		\end{equation*}
+		
+		With $\delta = \frac{1}{(T+1)^2}$, we can have that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\EE[Regret_T] & \leq \sum\limits_{i=2}^n (\frac{8 \log (T+1)^2}{\Delta_i} + \frac{T}{T+1} \Delta_i) \\
+							  &	\leq \sum\limits_{i=2}^n (\frac{16 \log(T+1)}{\Delta_i}) + (n-1) \Delta_i \\				
+			\end{aligned}
+		\end{equation*}
+	\end{proof}
+
+	This finishes the proof of the last algorithm in this chapter. UCB algorithm is much more realistic and generalizable in real life. It removes the assumption about knowing $\Delta_*$, the bound is not much worse compared with simple algorithm.
 \end{document}
