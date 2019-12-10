@@ -3,11 +3,710 @@
 \begin{document}
 	\chapter{Statistical Learning Theory}
 	
+	\section{Statistical Learning Setting}
 	In this chapter, we will talk about statistical learning theory. We will introduce several concept, like VC dimension, Rademacher Complexity. We will also talk about many lemmas to connect these definitions. Finally, we will apply our tools to models like Neural Network, etc.
 	
 	To begin with, let's discuss the setting in statistical learning.
 	
 	\begin{itemize}
 		\item Given observation space $X$.
+		\item Given label space $Y$. For example,
+			\begin{itemize}
+				\item $\{0,1\}$: classification.
+				\item $[k]$: multi-class classification.
+				\item $\R$: regression.
+			\end{itemize}
+		\item Prediction space $\hat{Y}$. In most cases $\hat{Y}$ is the same as $Y$, but sometimes they would be different.
+		\item There is unknown distribution
+		\begin{equation*}
+		D\in \Delta(X\times Y)
+		\end{equation*}
+		\item We work with hypothesis space $\H$. For example,
+			\begin{itemize}
+				\item Linear threshold functions: $h_{w,b}(x) = \mathbf{1}[wx + b > 0]$.
+				\item Decision stumps: $h_{i,c} = \mathbf{1}[x_i > c]$.
+				\item Neural Network: $h_{M_1,b_1,M_2,b_2,\cdots,M_k,b_k}(x) = \sigma(b_k + M_k\sigma(b_{k-1} + \cdots (x)))$, where $\sigma$ is the sigmoid function.
+			\end{itemize}
+		\item Loss function $l$: $\hat{Y} \times Y \to \R$. For example,
+		\begin{itemize}
+			\item Square Loss: $l(\hat{y},y) = (y - \hat{y})^2$.
+			\item Hinge Loss: $l(\hat{y},y) = \max(0, 1 - \hat{y}y)$.
+			\item 0-1 Loss: $l(\hat{y},y) = \mathbf{1}[\hat{y} \neq y]$.
+		\end{itemize}
 	\end{itemize}
+
+	We now give a definition used in this setting.
+	
+	\begin{definition}[\bfseries Risk]
+		Given distribution $D$, hypothesis $h \in \H$, we can define the risk of $h$ as
+		\begin{equation}
+		R(h) = \EE_{(x,y) \in D} [l(h(x),y)].
+		\end{equation}
+	\end{definition}
+
+	Intuitively, the risk is just the expectation of loss function over samples in the distribution.
+	
+	However, since $D$ is unknown to us, we cannot compute $R$ directly. Alternatively, we can compute empirical risk.
+	
+	\begin{definition}[\bfseries Empirical Risk]
+		Given data $\{(x_1,y_1),\cdots , (x_n,y_n)\} \sim D$, the empirical risk is defined as
+		\begin{equation}
+			\hat{R}_n(h) = \frac{1}{n} \sum\limits_{i=1}^n l(h(x_i),y_i).
+		\end{equation}
+	\end{definition}
+
+	\section{Empirical Risk Minimization}
+	
+	\begin{definition}[\bfseries Empirical Risk Minimization]
+		An ERM (Empirical Risk Minimization) algorithm tries to learn an
+		\begin{equation}
+		\hat{h}^{ERM} = \arg\min\limits_{h\in \H} \hat{R}_n(h).
+		\end{equation}
+	\end{definition}
+
+	Basically, it just finds an algorithm that could minimization empirical risk.
+	
+	In addition to empirical risk minimization, we also hope to know how well it could generalize. Therefore, we introduce two kinds of error.
+	
+	\begin{definition}[\bfseries Estimation Error]
+		\begin{equation}
+			R(\hat{h_n}^{ERM}) - \min\limits_{h^* \in \H} R(h^*).
+		\end{equation}
+	\end{definition}
+
+	\begin{definition}[\bfseries Approximation Error]
+		\begin{equation}
+			R(h^*) - \min\limits_{\textmd{all functions } h^{**}} R(h^{**}),
+		\end{equation}
+		
+		where $h^{**}(x) =\arg\min\limits_{\hat{y}} \EE_{y\sim D(\cdot|x)} [l(\hat{y},y)]$.
+	\end{definition}
+
+	Basically, estimation error captures how well our model learned from the sample data can generalize to other data following the same distribution. Approximation Error captures how well our function class compared to all function classes.
+	
+	For now, we just focus on bounding estimation error. Notice that
+	
+	\begin{equation*}
+		\begin{aligned}
+				R(\hat{h_n}^{ERM}) - \min\limits_{h^* \in \H} R(h^*)  = \ &  R(\hat{h_n}^{ERM}) - \hat{R}_n(\hat{h_n}^{ERM}) \\
+																		 + &\hat{R}_n(\hat{h_n}^{ERM}) - \hat{R}_n(h^*) \\
+																		 + &\hat{R}_n(h^*) - R(h^*).
+		\end{aligned}
+	\end{equation*}
+	
+	Since $\hat{h}_n^{ERM} = \arg\min\limits_{h\in \H} \hat{R}_n(h)$, we know that $\hat{R}_n(\hat{h_n}^{ERM}) - \hat{R}_n(h^*) \leq 0$. Then
+	
+	\begin{equation*}
+		\begin{aligned}
+		R(\hat{h_n}^{ERM}) - \min\limits_{h^* \in \H} R(h^*)  & \leq    R(\hat{h_n}^{ERM}) - \hat{R}_n(\hat{h_n}^{ERM})+ \hat{R}_n(h^*) - R(h^*) \\
+															  & \leq 2 \sup\limits_{h\in \H} |R(h) - \hat{R}_n(h)|.
+		\end{aligned}
+	\end{equation*}
+	
+	Bounding $|R(h) - \hat{R}_n(h)|$ is known as uniform deviation bound.
+	
+	Let's try to prove something wrong first.
+	
+	\begin{proof}[\bfseries False Proof]
+		Let $X_i = l(\hat{h}_n^{ERM}(x_i),y_i)$, where $(x_i,y_i)$ is the $i$-th element in the training set.
+		
+		Then by definition,
+		
+		\begin{equation*}
+			R(\hat{h}_n^{ERM}) = \EE_{(x,y) \in D} [l(\hat{h}_n^{ERM}(x),y)] = \mu.
+		\end{equation*}
+		
+		Therefore
+		\begin{equation*}
+					\EE_{x_i,y_i} = \mu.
+		\end{equation*}
+	
+	Let's use Hoeffding, assume $l$ is bounded in $[0,1]$, then
+	
+		\begin{equation*}
+			\begin{aligned}
+						\hat{R}_n(\hat{h_n}^{ERM}) - R(\hat{h_n}^{ERM}) & = \frac{1}{n} \sum\limits_{i=1}^n X_i  - \mu
+																		& \leq \sqrt{\frac{\log 1 / \delta}{2n}}
+			\end{aligned}
+		\end{equation*} 
+		
+		with probability $1 - \delta$.
+	\end{proof}
+
+	The problem with this proof is that Hoeffding's inequality requires each random variable to be independent. However, in our case, $X_i$ is not independent with each other. The reason is that $\hat{h}_n^{ERM} = \arg\min\limits_{h\in \H} \frac{1}{n} \sum\limits_{i=1}^n l(h(x_i),y_i)$. This makes these sample data correlated to each other. To be more specific, consider two points $(x_1, y_1)$ and $(x_2, y_2)$, if we change $(x_1,y_1)$, then $\hat{h}_n^{ERM}$ will change. In consequence, $X_2$ will also change. Therefore, we cannot use Hoeffding inequality here.
+	
+	However, if we remove "ERM", everything will be fine. Changing $(x_1, y_1)$ will not affect $h$ and $X_2$. Therefore, alternatively we can do this, 
+	
+	\begin{equation*}
+		\begin{aligned}
+			\Pr(\sup\limits_{h\in \H}|\hat{R}_n (h) - R(h)| > t) & \leq  \Pr(\exists h, |\hat{R}_n (h) - R(h)| > t) \\	
+														& \leq \sum\limits_{h\in \H} \Pr(|\hat{R}_n (h) - R(h)| > t) \\
+														& \leq  \sum\limits_{h\in \H}  \exp(-2nt^2)\\
+														& \leq |\H|  \exp(-2nt^2).
+		\end{aligned}
+	\end{equation*}
+	
+	Following this, we can give the lemma about risk function.
+	
+	\begin{lemma}
+		If $H$ is finite, then
+		
+		\begin{equation*}
+			\begin{aligned}
+				\EE[R(\hat{h}) - R(h^*)] = O(\sqrt{\frac{\log 1 / \delta + \log |\H|}{n}})				
+			\end{aligned}
+		\end{equation*}
+		
+		with probability larger than $1-\delta$.
+	\end{lemma}
+
+	\begin{proof}
+		From our previous deduction,
+		
+		\begin{equation*}
+			\begin{aligned}
+				R(\hat{h}) - R(h^*) & \leq  2 \sup\limits_{h\in \H} |R(h) - \hat{R}_n(h)|
+			\end{aligned}
+		\end{equation*}
+		
+		\begin{equation*}
+			\begin{aligned}
+				\Pr(\sup\limits_{h\in \H}|\hat{R}_n (h) - R(h)| > t)\leq |\H|  \exp(-2nt^2).
+			\end{aligned}
+		\end{equation*}
+		
+		By setting $t = \sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}}$, we can get that
+		
+		\begin{equation*}
+			\begin{aligned}
+			\Pr(\sup\limits_{h\in \H}|\hat{R}_n (h) - R(h)| > \sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}}) & \leq |\H|  \exp(- (\log 2 / \delta + \log |\H|)) \\
+																								   & \leq |\H|  \exp(- (\log 2|\H| / \delta)) \\
+																								   & \leq \delta .
+			\end{aligned}
+		\end{equation*}
+		
+		Therefore, with probability larger than $1-\delta$, we can have
+		
+		\begin{equation*}
+			\sup\limits_{h\in \H}|\hat{R}_n (h) - R(h)| \leq \sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}}
+		\end{equation*}.
+		
+		In conclusion,
+		
+		\begin{equation*}
+			\begin{aligned}
+				\EE[R(\hat{h}) - R(h^*)]  & \leq  2 \sup\limits_{h\in \H} |R(h) - \hat{R}_n(h)| \\
+										  & \leq 2  \sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}} \\
+										  & = O( \sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}})
+			\end{aligned}
+		\end{equation*}
+		
+		with probability at least $1-\delta$.
+	\end{proof}
+
+	This concludes our discussion about empirical risk minimization when $|\H|$ is finite. We can see that if $|\H|$ is finite, the model we learn from data compared with the best model in the function class has bounded error ($\sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}}$). This also shows that if we increase the number of samples, we could get closer to the best model in function class. 
+	
+	However, what if $|\H|$ is not finite? This is quite common for most statistical learning model. To handle this situation, we need to give some more definitions that will be used. 
+	
+	For now, assume that $\H$ is a class of binary functions.
+	
+	\begin{definition}[\bfseries Growth Function]
+		The growth function of a function class $\H$ is defined as
+		\begin{equation*}
+			\Pi_{\H}(m) = \sup\limits_{S= \{x_1, \cdots, x_m\} \subset X} |\{(h(x_1), \cdots, h(x_m))\} : h\in \H|.
+		\end{equation*}
+	\end{definition}
+
+	Intuitively, it means that fixing a set of points in $X$, by changing the function $h\in \H$, how many different label vectors can we generate.
+	
+	We have the following claim for growth function,
+	
+	\begin{claim}
+			\begin{equation*}
+				\Pi_{\H}(m) \leq 2^m.
+			\end{equation*}
+	\end{claim} 
+	
+	This is intuitive since the number of different vectors with length $m$ and each element can take only two values is definitely not larger than $2^m$.
+	
+	Using growth function, we can give another important definition
+	
+	\begin{definition}[\bfseries VC dimension]
+		The VC dimension of a function class $\H$ is the largest value $d$ such that
+		
+		\begin{equation}
+			\Pi_{\H}(d) = 2^d.
+		\end{equation}
+		
+		Basically, VC dimension is the size of largest set of $X$'s that could be shattered.
+	\end{definition}
+
+	For VC dimension, we have the following claim.
+	
+	\begin{claim}
+		In $\R^d$, the class $\H$ of binary threshold functions has VC dimension $d+1$.
+	\end{claim}
+
+	The reason that we introduce VC dimension is that we hope to show that VC dimension characterizes the "learnability" of a function class $\H$. It means
+	
+	\begin{enumerate}
+		\item $\forall D \in \Delta(X,Y)$, it has
+			\begin{equation*}
+				\sup\limits_{h\in\H} |R(h) - \hat{R}_n (h)| =  O( \sqrt{\frac{\log 2 / \delta + VCdim(H)}{n}}).
+			\end{equation*}
+		\item This equation is tight up to log factors. That is, $\exists D\in  \Delta(X,Y)$ such that no algorithm can guarantee
+			\begin{equation*}
+				|R(h) - \hat{R}_n (h)| \leq O( \sqrt{\frac{ VCdim(H)}{n}}).
+			\end{equation*}
+	\end{enumerate}
+
+	Before proving this, we need some more definitions.
+	
+	\begin{definition}[\bfseries Rademacher Random Variable]
+		We say that a random variable $X$ is called Rademacher Random Variable if 
+			\begin{equation}
+				\Pr(X= 1) = \Pr(X=-1) = \frac{1}{2}.
+			\end{equation}
+	\end{definition}
+	
+	\begin{definition}[\bfseries Empirical Rademacher Complexity]
+		Give samples $S = \{X_1,\cdots X_m\} \in X$, the Empirical Rademacher Complexity of a function class $\H$ is defined as
+			\begin{equation}
+				\hat{\RR}_S(\H) = \EE_{\sigma_1,\cdots,\sigma_n} [\frac{1}{m} \sup\limits_{h\in \H} \sum\limits_{i=1}^n \sigma_i h(x_i)],
+			\end{equation}
+		where $\sigma_1\cdots \sigma_n$ is Rademacher random variables.
+	\end{definition}
+
+	Basically, Empirical Rademacher Complexity captures the richness of function class $\H$. It measures how well the functions can fit random noise.
+	
+	In addition to Empirical Rademacher Complexity, let's also define Rademacher Complexity
+	
+	\begin{definition}[\bfseries Rademacher Complexity]
+		Given distribution $D\in \Delta(X)$, the Rademacher Complexity of a function class $\H$ is defined as
+			\begin{equation}
+				\RR_n(G) = \EE_{S \sim D^n} [\hat{\RR}_S(\H) ].
+			\end{equation}
+	\end{definition}
+
+	It represents the expectation of Empirical Rademacher Complexity if we randomly select $n$ samples from the distribution.
+	
+	We have the following two facts for Empirical Rademacher Complexity
+	
+	\begin{fact} $ $
+		
+		\begin{enumerate}
+			\item If $|G| = 1$, then $\hat{\RR}_S(G) = 0$.
+			\item If $S = \{x_1,\cdots, x_n\}$ are all distinct, and $G = \{\textmd{all function}\in \{0,1\}\}$, then $\hat{\RR}_s(G) = 1$.
+		\end{enumerate}
+	\end{fact} 
+
+	Before proceeding, let's give several notations for convenience.
+	
+	\begin{notation}
+		For a distribution $D \in \Delta(X)$, let's define
+		\begin{equation}
+			\begin{aligned}
+				& \EE h = \EE_{x\in D}[h(x)] \\
+				&\hat{\EE}_S h = \frac{1}{m} \sum\limits_{i=1}^m h(x_i), \ S =\{x_1, \cdots, x_n\}
+			\end{aligned}
+		\end{equation}
+	\end{notation}
+
+	Basically, $\EE h$ is the expectation value of function $h$ over a sample following the distribution, while $\hat{\EE}_S h$ is the average function value for the samples.
+	
+	By these, we have the following theorem.
+	
+	\begin{theorem}[\bfseries Symmetrization Lemma]\label{symmetric_lemma}
+		
+		Let $S = (x_1,\cdots, x_m) \sim D^m$, let $h \in \H$ be bounded in $[0,1]$, then $\forall h\in \H$, it holds that 
+		
+		\begin{equation}
+			\hat{\EE}_S h - \EE h  \leq 2 \RR_n(H) + \sqrt{\frac{\log 1 / \delta}{2n}}
+		\end{equation}
+		
+		with probability larger than $1-\delta$.
+	\end{theorem}
+
+	This theorem bounds the difference between average function value for sample and the expectation value.
+	
+	To prove this, we need the following lemma,
+	
+	\begin{lemma}[\bfseries McDiarmid's Inequality]\label{mc_ineq}
+		Let $f$ be a function that maps $S\to \R$. $\forall x_i \in S$, let $S'$ denote $(S - \{x_i\}) \cup x_i'$. Suppose that $\forall x_i'$, it has 
+		
+		\begin{equation*}
+			|f(S) - f(S')| \leq c
+		\end{equation*}
+		
+		Then it holds that 
+		\begin{equation}
+		\Pr(f(S) - \EE_{S\sim D} [f(S)] > t) \leq \exp(-\frac{2t^2}{nc^2}).
+		\end{equation}
+	\end{lemma}
+
+	This lemma states that if the function value will not change more than $c$ by exchanging only one element in the sample. Then the difference between function value and the expectation of function value can be bounded in probability.
+	
+	\begin{proof}
+		Let's define $U_k$ as 
+		
+		\begin{equation*}
+			U_k = \EE_S [f(S)|x_1, \cdots x_k],
+		\end{equation*}
+		
+		where $S =\{x_1, \cdots, x_n\}$.
+		
+		We can say the following things for $U_k$
+		
+		\begin{enumerate}
+			\item $U_0 = \EE_S [f(S)]$.
+			\item $U_n = \EE_S [f(S) | x_1,\cdots x_n] = f(S)$.
+			\item $\forall k$, $|U_k - U_{k-1}| \leq c$.
+			\item $U_0\cdots U_n$ is a martingale.
+		\end{enumerate}
+	
+		Let's prove the last one.
+		
+		We can see that
+		
+		\begin{equation*}
+			\begin{aligned}
+				\EE[U_k | x_1,\cdots x_{k-1}] & = \EE[\EE[f(S) | x_1,\cdots x_k] | x_1,\cdots, x_{k-1}]  \\
+											  & = \EE[f(S) | x_1,\cdots, x_{k-1}]\\
+											  & = U_{k-1}
+			\end{aligned}
+		\end{equation*}
+		
+		Therefore, by Azuma's inequality, we can have that 
+		
+		\begin{equation*}
+			\Pr(U_n - U_0 > t) \leq \exp(-\frac{2t^2}{nc^2}).
+		\end{equation*}
+	\end{proof}
+
+
+	This finishes the proof of the lemma, let's prove theorem \ref{symmetric_lemma} now.
+	
+	\begin{proof}
+		To use lemma \ref{mc_ineq}, let $\Phi(S) = \sup\limits_{h\in \H} (\hat{\EE}_S h - \EE h )$. We first need to check that we can apply lemma \ref{mc_ineq} to $\Phi(S)$. Let $S'$ and $S$ differ by one element. Notice that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				|\Phi(S) - \Phi(S')| & = |\sup\limits_{h\in \H} (\hat{\EE}_S h - \EE h ) - \sup\limits_{h'\in \H} (\hat{\EE}_{S'} h - \EE h )| \\
+									& \leq \sup\limits_{h\in \H} (\hat{\EE}_{S'} h - \hat{\EE}_S h) \\
+									& = \sup\limits_{h\in \H} \frac{1}{n} (\sum\limits_{i=1}^n h(x_i) - \sum\limits_{i=1}^n h(x'_i) ) \\
+									& \leq \sup\limits_{h\in \H} \frac{1}{n} (h(x_i) - h(x_i')) \\
+									& \leq \frac{1}{n}.
+			\end{aligned}
+		\end{equation*}
+		
+		Therefore, it satisfies the assumption in the lemma, and we can see that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\Pr(\Phi(S) - \EE_{S \sim D}[\Phi(S)] > t ) \leq \exp(-2t^2n).
+			\end{aligned}
+		\end{equation*}
+		
+		Let $\delta = -\exp(-2t^2 n)$ and we can get that $\Phi(S) - \EE_{S \sim D}[\Phi(S)] \leq \sqrt{\frac{\log 1 / \delta}{2n}}$ with probability larger than $1-\delta$.
+		
+		Now let's analysis $\EE_{S \sim D}[\Phi(S)]$. Notice that
+		
+		\begin{equation*}
+			\begin{aligned}
+				\EE_{S \sim D}[\Phi(S)] & = \EE_{S \sim D}[\sup\limits_{h\in \H} (\hat{\EE}_S h - \EE h )] \\
+										& = \EE_{S \sim D}[\sup\limits_{h\in \H} (\hat{\EE}_S h - \EE_{S' \sim D} [\hat{\EE}_{S'} h ])]  \\
+										& \leq \EE_{S \sim D} \EE_{S' \sim D} [\sup\limits_{h\in \H} (\hat{\EE}_S h- \hat{\EE}_{S'} h ) ] \\
+										& = \frac{1}{n } \EE_{S \sim D} \EE_{S' \sim D}\EE_{\sigma_1, \cdots, \sigma_n}  [\sup\limits_{h\in \H} \sum\limits_{i=1}^n \sigma_i (h(x_i) - h(x_i')) ] \\
+										& \leq  \frac{1}{n } \EE_{S \sim D}\EE_{\sigma_1, \cdots, \sigma_n}  [\sup\limits_{h\in \H} \sum\limits_{i=1}^n \sigma_i (h(x_i))] + \frac{1}{n } \EE_{S' \sim D}\EE_{\sigma_1, \cdots, \sigma_n}  [\sup\limits_{h'\in \H} \sum\limits_{i=1}^n \sigma_i (h'(x_i'))] \\
+										& = \RR_n(G) + \RR_n(G) \\
+										& = 2\RR_n(G).
+			\end{aligned}
+		\end{equation*}
+		
+		Combine all above, we can see that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\hat{\EE}_S h - \EE h & = \Phi(S) \\
+									  & \leq \EE[\Phi(S)] + \sqrt{\frac{\log 1 / \delta}{2n}} \\
+									  & \leq 2 \RR_n(S) + \sqrt{\frac{\log 1 / \delta}{2n}}.
+			\end{aligned}
+		\end{equation*}
+	\end{proof}
+
+	Before continuing, let's give another notation.
+	
+	\begin{notation}
+		Given $S = \{x_1, \cdots x_n\}$, let
+		
+		\begin{equation*}
+			\H|S = \{h(x_1), \cdots, h(x_n) : h\in \H \}.
+		\end{equation*} 
+	\end{notation}
+
+	By this definition, we can see that the growth function $\Pi_{\H}(n) = \max\limits_{|S| = n} |\H | S|$, here $\H$ is assumed to be a binary class of functions.
+	
+	Let's talk about Massart's Lemma.
+	
+	\begin{theorem}[\bfseries Massart's Lemma]
+		Let $A \subset \R^n$ be a finite set with $\max\limits_{a\in A} ||a||_2 \leq r$, then we have
+		
+		\begin{equation}
+			\EE_{\sigma_1, \cdots, \sigma_n} [\sup\limits_{a\in A} \sum\limits_{i=1}^n a_i \sigma_i] \leq r \sqrt{2\log |A|}.
+		\end{equation}
+	\end{theorem}
+
+	\begin{proof}
+		For any $\lambda > 0$, we know that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\exp(\lambda \EE_{\sigma_1, \cdots, \sigma_n} [\sup\limits_{a\in A} \sum\limits_{i=1}^n a_i \sigma_i]) &  \leq \EE_{\sigma_1, \cdots, \sigma_n} [\exp(\lambda  \sup\limits_{a\in A} \sum\limits_{i=1}^n a_i \sigma_i)] \\
+				& = \EE_{\sigma_1, \cdots, \sigma_n} [\sup\limits_{a\in A} \exp(\lambda   \sum\limits_{i=1}^n a_i \sigma_i)] \\
+				& \leq \EE_{\sigma_1, \cdots, \sigma_n} [\sum\limits_{a\in A} \exp(\lambda   \sum\limits_{i=1}^n a_i \sigma_i)] \\
+				& \leq \sum\limits_{a\in A} \EE_{\sigma_1, \cdots, \sigma_n} [ \exp(\lambda   \sum\limits_{i=1}^n a_i \sigma_i)] \\
+				& \leq \sum\limits_{a\in A} \EE_{\sigma_1, \cdots, \sigma_n} [ \Pi_{i=1}^n \exp(\lambda  a_i \sigma_i)] \\
+				& \leq \sum\limits_{a\in A}  \Pi_{i=1}^n  \EE_{\sigma_1, \cdots, \sigma_n} [\exp(\lambda  a_i \sigma_i)] \\
+			(Hoeffding)	& \leq \sum\limits_{a\in A}  \Pi_{i=1}^n  \exp(\frac{\lambda^2 a_i^2}{2})\\
+				& \leq \sum\limits_{a\in A}   \exp(\frac{\lambda^2  \sum\limits_{i=1}^n a_i^2}{2}) \\
+				& \leq \sum\limits_{a\in A}   \exp(\frac{\lambda^2  r^2}{2}) \\
+				& \leq |A| \exp(\frac{\lambda^2  r^2}{2}).
+			\end{aligned}
+		\end{equation*}
+		
+		Then, just take log on both sides and we can get that 
+		
+		\begin{equation*}
+			\EE_{\sigma_1, \cdots, \sigma_n} [\sup\limits_{a\in A} \sum\limits_{i=1}^n a_i \sigma_i])  \leq \frac{\log |A|}{\lambda} + \frac{r^2 \lambda}{2}.
+		\end{equation*}
+		
+		Set $\lambda = \sqrt{\frac{2\log |A|}{r^2}}$ and we can get the result.
+	\end{proof}
+	
+	The reason we introduce Massart's Lemma is that we want to give an upper bound on $\hat{\RR_S}(\H)$.
+		
+	\begin{claim}
+		The empirical Radamacher Complexity of a function class $\H$ is upper bounded by $\sqrt{\frac{2\log \Pi_{\H} (n)}{n}}$.
+	\end{claim}
+
+	\begin{proof}
+		
+		By definition,
+		
+		\begin{equation*}
+			\begin{aligned}
+				\hat{\RR_S}(\H) & = \EE_{\sigma_1,\cdots,\sigma_n } [\frac{1}{n} \sup\limits_{h\in \H} \sum\limits_{i=1}^n \sigma_i h(x_i)] \\
+								& = \EE_{\sigma_1,\cdots,\sigma_n } [\frac{1}{n} \sup\limits_{a \in \H|S} \sum\limits_{i=1}^n \sigma_i a_i] \\
+								& \leq \frac{1}{n} r \sqrt{2\log |\H|S|} \\ 
+								& = \sqrt{ \frac{2\log |\H|S|}{n}}   \\
+								& \leq \sqrt{\frac{2\log \Pi_{\H}(n)}{n}}.
+			\end{aligned}
+		\end{equation*}
+	\end{proof}
+		
+		
+		Previously, we already known that 
+		
+		\begin{equation*}
+			\begin{aligned}
+				\Phi(S) \leq \RR_n(S) + \sqrt{\frac{\log 1 / \delta}{2n}}.
+			\end{aligned}
+		\end{equation*}
+		
+		Now with this lemma, we can replace Radamacher complexity with growth function and get
+		
+		\begin{equation*}
+			\begin{aligned}
+				\Phi(S) \leq \sqrt{\frac{2\log \Pi_{\H}(n)}{n}} + \sqrt{\frac{\log 1 / \delta}{2n}}.
+			\end{aligned}
+		\end{equation*}
+		
+		
+		Next, we will try to express the growth function in term of VC-dimension. First of all, we will introduce Sauer's Lemma, which bounds growth function with VC dimension.
+		
+		\begin{theorem}[\bfseries Sauer's Lemma]
+			Suppose that a binary function class $\H$ has VC-dimension $d$, then the growth function of $\H$ is bounded by
+			
+			\begin{equation}
+			\Pi_{\H}(n) \leq \sum\limits_{i=0}^d \binom{n}{i} \leq n^d.
+			\end{equation}
+		\end{theorem}
+		
+		\begin{proof}
+		
+		Let $M_{S,\H}$ be the matrix whose \textbf{unique} rows are $(h(x_1),\cdots, h(x_n)$, where $h\in \H$ and $S = \{x_1,\cdots ,x_n\}$. The rows are unique by deleting repeated rows.
+		
+		For this matrix, we can have the following two facts.
+		
+		\begin{fact}
+		
+		\begin{enumerate}
+		\item $\Pi_{\H}(n) = \max\limits_{|S| = n} \#\ rows(M_{S,\H})$
+		
+		\item If all rows of $M_{S,\H}$ have $\leq$ $d$ $1$s, then $\#\ rows(M_{S,\H})\leq \sum\limits_{i=0}^d \binom{m}{i}$.
+
+		\end{enumerate}
+		\end{fact}
+		Then the trick of the proof is to modify $M_{S,\H}$ such that every row has $\leq$ $d$ $1$s and VC-dim will not increase and no rows are duplicate.
+		
+		The way we modify the matrix is very simple.
+		
+		\begin{algorithm}[]
+			\floatname{algorithm}{}
+			\begin{algorithmic}
+			\STATE For epoch = $1, 2,\cdots $
+			\bindent
+			\STATE For col $ j = 1, 2,\cdots n$
+			\bindentt
+			\STATE For row $i = 1,\cdots$
+			
+			\STATE $\qquad$ Let $M_{S,\H}(i,j) = 0$ if this does not duplicate another row.
+			\eindentt
+			\eindent
+			\end{algorithmic}
+		\end{algorithm}
+
+
+		For this procedure, we can have the following claim.
+		
+		\begin{claim}
+			After procedure finishes, if for some set of columns $U \subset [n]$, there exists row with all ones in $U$, then we are shattering $U$.
+		\end{claim}
+		
+		Hence, the VC dimension of resulting matrix is just the largest number of $1$s that we can find in the row.
+		
+		What remains to be proved is that the VC-dimension will not increase under this procedure.
+		
+		Assume towards contradiction that after shifting some column $j$, a new subset $U\subset [n]$ was suddenly shattered. This must mean that $\exists$ rows $i,k$ such that $M(i,U) = M(k,U)$ before shifting but $M'(i,U) \neq M'(k,U)$ after shifting.
+		
+		Without loss of generality let $M(k,j) = 1$ and $M'(k,j) = 0$, thus $M(i,j) = 1$ and $M'(i,j) = $.
+		
+		We do not change $M'(i,j)$ into $0$ because there exists a row $l\neq k$ that $l$ would be duplicate if we change $M'(i,j)$ into zero. 
+		
+		This means that $M'(l, U) \neq M'(k,U)$, which indicates that the set $U$ is already shattered.
+		
+
+		\end{proof}
+		
+		 Now that we have all above tools, we want to give a generalization bound on estimation error 
+		 
+		 \begin{equation*}
+		 		 \sup\limits_{h\in H}(\frac{1}{n} \sum\limits_{i=1}^n l(h(x_i),y_i)) - \EE_{(x,y)\sim D} l(h(x),y).
+		 \end{equation*}
+		 
+		 Notice that in our setting, we have a hypothesis class $\H: X \to \hat{Y}$ and a loss function $l: \hat{Y} \times Y \to \R$. Actually, the loss function itself is a set of functions 
+		 
+		 \begin{equation*}
+		 	G_{\H} = \{g_h(x,y) = l(h(x),y), h\in \H\}.
+		 \end{equation*}
+		
+		 The interesting thing is that we can use loss function class to represent estimation error.
+		 
+		 Notice that 
+		 
+		 \begin{equation*}
+		 \begin{aligned}
+		  \sup\limits_{h\in H}(\frac{1}{n} \sum\limits_{i=1}^n l(h(x_i),y_i) - \EE_{(x,y)\sim D} l(h(x),y)) = \sup\limits_{g_n \in G_{\H}} \hat{\EE}_S g_n - \EE g_n.
+ 		 \end{aligned}
+		 \end{equation*}
+		 
+		 To continue, we will give the following claim.
+		 
+		 \begin{claim}
+		 	Let $\H$ be a binary function class, and let $G_{\H}$ be the corresponding loss class for 0-1 loss. Then it has 
+		 	
+		 	\begin{equation}
+			 	\hat{\RR}_S(G_{\H}) = \hat{\RR}_{S|x} (\H),
+		 	\end{equation}
+		 	
+		 	where $S|x = \{x_1,\cdots, x_n\}$.
+		 \end{claim}
+		 
+		 This claim states that the Rademacher complexity for the loss function class is the same as that of the function class itself.
+		 
+		 \begin{proof}
+		 \begin{equation*}
+		 		 \begin{aligned}
+		 		 \hat{\RR}_S(G_{\H}) &= \EE_{\sigma_1 \cdots \sigma_n} [\frac{1}{n} \sup\limits_{g_h \in G_{\H}} \sum\limits_{i=1}^n \sigma_i g_h(x_i,y_i) ] \\
+		 		 & = \EE_{\sigma_1 \cdots \sigma_n} [\frac{1}{n} \sup\limits_{g_h \in G_{\H}} \sum\limits_{i=1}^n \sigma_i \mathbf{1}[h(x_i) \neq y_i] ] \\
+		 		 		 		 & = \EE_{\sigma_1 \cdots \sigma_n} [\frac{1}{2n} \sup\limits_{g_h \in G_{\H}} \sum\limits_{i=1}^n \sigma_i (2\cdot\mathbf{1}[h(x_i) \neq y_i] -1) ] \\
+		  & = \EE_{\sigma_1 \cdots \sigma_n} [\frac{1}{2n} \sup\limits_{g_h \in G_{\H}} \sum\limits_{i=1}^n \sigma_i (2\cdot\mathbf{1}[h(x_i) \neq 0] -1) ] \\
+		 		  & = \EE_{\sigma_1 \cdots \sigma_n} [\frac{1}{2n} \sup\limits_{g_h \in G_{\H}} \sum\limits_{i=1}^n \sigma_i (2\cdot\mathbf{1}[h(x_i) \neq 0]) ] \\
+		 		 & = \EE_{\sigma_1 \cdots \sigma_n} [\frac{1}{2n} \sup\limits_{g_h \in G_{\H}} \sum\limits_{i=1}^n \sigma_i (2 h(x_i)) ] \\
+		 		 = \hat{\RR}_{S|x} (\H).
+		 		 \end{aligned}
+		 \end{equation*}
+		 \end{proof}
+		 
+		 In this proof, I can see three thicks used:
+		 
+		 \begin{itemize}
+		 \item We can add constant number into Rademacher Complexity without changing its value.
+		 \item Both $\H$ and loss function are binary function class.
+		 \item The reason we turn $\mathbf{1}(\cdot)$ into $2 \cdot \mathbf{1} (\cdot) - 1$ is to make the value symmetric for $0$. In this way we can just replace $y_i$ as $0$.
+		 \end{itemize}
+		 
+		 Finally, let's will give a bound for the estimation error using VC-dimension. By what we have deduced so far, the estimation error is bounded as
+		 
+		 \begin{equation*}
+		 	\begin{aligned}
+		 		R(\hat{h}^{ERM}) - \min\limits_{h^*\in \H} R(h^*) & \leq c_1 \sup\limits_{h\in \H} |R(h) - \hat{R}(h)| \\
+		 		& \leq c_1 \sup\limits_{g_h \in G_{\H}} |\hat{\EE}_S g_h - \EE g_h| \\
+		 		& \leq c_2 \sup\limits_{g_h \in G_{\H}} \hat{\EE}_S g_h - \EE g_h \\
+		 		& \leq c_3 (\RR_n(G_{\H}) + \sqrt{\frac{\log 1 / \delta}{2n}}) \\
+			 	& \leq c_3 (\RR_n(\H) + \sqrt{\frac{\log 1 / \delta}{2n}}) \\
+			 	& \leq c_4 (\sqrt{\frac{\log \Pi_{H}(n)}{n}} + \sqrt{\frac{\log 1 / \delta}{2n}}) \\
+			 	& \leq c_4 (\sqrt{\frac{\log(n^d)}{n}} + \sqrt{\frac{\log 1 / \delta}{2n}}) \\
+			 	& \leq c_4 (\sqrt{\frac{d\log(n)}{n}} + \sqrt{\frac{\log 1 / \delta}{2n}}) \\
+		 	\end{aligned}
+		 \end{equation*}
+		 
+		 The above shows that the bound of estimation error is approximately $O(\sqrt{\frac{d\log (n)}{n}})$. This is the upper bound of this error, we will next try to give a lower bound.
+		 
+		 \begin{claim}
+		 	Given a hyphothesis class $H$ with VC-dimension $d$, there exists a family of distribution $D_{\sigma}$, $\sigma \in \Gamma$, such that for any algorithm $\alg: \{(x_1, y_1), \cdots (x_n,y_n)\} \to h$, it holds that
+		 	
+		 	\begin{equation}
+		 		\Pr(R(\hat{h}) - \min\limits_{h\in \H} R(h)) > \sqrt{\frac{d}{320n}} ) > \frac{1}{64}.
+		 	\end{equation}
+		 \end{claim}
+		 
+		 The proof is very complicate, we will only give the sketch here.
+		 
+		 \begin{proof}[Proof Sketch]
+			Sample $\sigma_1, \cdots , \sigma_d$ as i.i.d Rademacher distribution random variable.
+		 		
+		 		Let $x_1, \cdots, x_d$ be the shattered set of $X$ and define $D_\sigma$ on $X \times \{0,1\}$ as follows:
+		 		
+ 		\begin{equation}
+ 		\begin{aligned}
+ 	&\Pr\limits_{(x,y) \sim D_\sigma} ((x,y) = (x_i, 1)) = (\frac{1}{2} + c\sigma_i \frac{d}{m}) \frac{1}{d} \\
+ 	&\Pr\limits_{(x,y) \sim D_\sigma} ((x,y) = (x_i, 0)) = (\frac{1}{2} - c\sigma_i \frac{d}{m}) \frac{1}{d} 
+ 		\end{aligned}
+ 		\end{equation} 
+ 		
+ 		\begin{lemma}
+ 				If a coin has distribution Bernoulli($\frac{1}{2} \pm r $), then we need O($\frac{1}{r^2}$) samples to get $\frac{2}{3}$ chance of correctly guessing the bias direction.
+ 			\end{lemma}
+ 		
+ 			Combine this lemma and the above proof sketch we can get a rough sense of the complete proof.
+		 \end{proof}
+		 
+		 
+		 \section{Neural Network}
+		 
+		 Before we talk about neural network, let's first talk about two properties of growth function.
+		 
+		 \begin{fact}
+		 	Let $\H_1$ and $\H_2$ be two function classes, then
+		 	
+		 	\begin{enumerate}
+		 		\item If $\H_1$ and $\H_2$ both map $X\to Y$, then $\Pi_{\H_1 \times \H_2}(m) \leq \Pi_{\H_1}(m) \cdot \Pi_{\H_2}(m) $.
+		 		\item If $\H_1$ maps $X\to Y$ and $\H_2$ maps $Y\to Z$, then  $\Pi_{\H_1 \circ \H_2}(m) \leq \Pi_{\H_1}(m) \cdot \Pi_{\H_2}(m) $.
+		 	\end{enumerate}
+		 \end{fact}
+	 
+	 Next, we will talk about neural network.
+	 
+	 	\section{Margin Theory}
 \end{document}
