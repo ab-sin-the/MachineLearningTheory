@@ -64,7 +64,7 @@ Next, we will talk about convexity, its definition and several useful facts.
 	Let $\K \subset \R^n$ be a convex set and $f: \K \to \R^n$ be a differentiable function. Then function $f$ is convex if and only if $\forall \xb,\yb \in \K$, we have that
 	
 	\begin{equation}
-		f(\xb) \geq f(\yb) + \langle f(\yb) , \xb - \yb \rangle. \label{convex_f_2}
+		f(\xb) \geq f(\yb) + \langle \nabla f(\yb) , \xb - \yb \rangle. \label{convex_f_2}
 	\end{equation}
 \end{claim}
 
@@ -89,7 +89,7 @@ An intuition behind this claim is that $f$ is convex if and only if the first or
 		\item If $f$ is convex and $g$ is convex, then $f + g$ is convex.
 		\item If $f$ is convex, then $\forall \alpha \geq 0 $, $\alpha f$ is convex.
 		\item If $f$ is convex and $g$ is convex, then $\max\{f,g\}$ is convex.
-		\item If $g(\xb, \yb)$ is jointly convex is $\xb$, $\yb$, then $f(\xb) = \inf\limits_{\yb} g(\xb, \yb)$ is convex.
+		\item If $g(\xb, \yb)$ is jointly convex in $\xb$, $\yb$, then $f(\xb) = \inf\limits_{\yb} g(\xb, \yb)$ is convex.
 	\end{enumerate}
 \end{proposition}
 
@@ -113,7 +113,7 @@ We can see that one example of concave function is $log$ function.
 \begin{claim}
 	If $f$ is a differentiable function, then $f$ is $c$-$Lipschitz$ with respect to $||\cdot||$ if and only if $\forall \xb \in \R^n$,
 		\begin{equation}
-	||f(\xb)||_* \leq c
+	||\nabla f(\xb)||_* \leq c
 	\end{equation}
 	where $||\cdot||_*$ is the dual norm of $||\cdot||$.
 \end{claim}
@@ -230,7 +230,7 @@ Notice that in contrast to strongly convex, a smooth function grows \textbf{at m
 Notice that although smooth seems to be contrary to strongly convex, a function $f$ can be both $\alpha$-strongly convex and $\beta$-smooth for some $\alpha$ and $\beta$. We will give an example next.
 
 \begin{example}
-	Let $M \in \R^{n\times n}$ be a positive definite matrix and let $f(\xb) = \frac{1}{2} \xb^T M \xb$. Denote $\lambda_{min}$ as the smallest eigenvalue of $M$ and $\lambda_{max}$ as the largest eigenvalue of $M$. Then we can prove easily that $M$ is $\lambda_{min}$-strongly convex and $\lambda_{max}$-smooth.
+	Let $M \in \R^{n\times n}$ be a positive definite matrix and let $f(\xb) = \frac{1}{2} \xb^T M \xb$. Denote $\lambda_{min}$ as the smallest eigenvalue of $M$ and $\lambda_{max}$ as the largest eigenvalue of $M$. Then we can prove easily that $f$ is $\lambda_{min}$-strongly convex and $\lambda_{max}$-smooth.
 \end{example}
 
 \begin{proof}
@@ -273,7 +273,7 @@ We will next talk about some facts about Bregman divergence.
 		\item $f$ is $\mu$-strongly convex if and only if $D_f(\xb, \yb) \geq \frac{\mu}{2} ||\xb-\yb||^2$.
 		\item $f$ is $\beta$-smooth if and only if $D_f(\xb, \yb) \leq \frac{\beta}{2} ||\xb - \yb||^2$
 		\item If $D_f(\xb, \yb) = D_f(\yb, \xb)$, then $f$ is quadratic.
-		\item Pinsker's Inequality: $KL(\p, \qb) \geq \frac{1}{2} ||\p - \qb||_1^2$. It means that entropy function is $1$-strongly convex in $||\cdot||_1$.
+		\item Pinsker's Inequality: $KL(\p|| \qb) \geq \frac{1}{2} ||\p - \qb||_1^2$. It means that entropy function is $1$-strongly convex in $||\cdot||_1$.
 	\end{enumerate}
 \end{fact}
 
@@ -334,7 +334,7 @@ There is one famous inequality for Fenchel dual conjugate called Fenchel-Yang In
 \begin{theorem}[Fenchel-Yang Inequality]
 	$\forall \x \in \textmd{dom}(f)$ and $\forall \theta \in \textmd{dom}(f^*)$, it holds that 
 	\begin{equation}
-	f(\x) + f^*(\x) \geq \langle \x, \theta \rangle.
+	f(\x) + f^*(\theta) \geq \langle \x, \theta \rangle.
 	\end{equation}
 \end{theorem}
 
@@ -359,7 +359,7 @@ There is one famous inequality for Fenchel dual conjugate called Fenchel-Yang In
 I will next discuss some facts about Fenchel dual.
 \begin{fact}$ $
 	\begin{enumerate}
-		\item If $f$ is closed, then $(f^*)^8 = f$.
+		\item If $f$ is closed, then $(f^*)^* = f$.
 		\item $\nabla f (\nabla f^*(\theta)) = \theta$ and $\nabla f^*(\nabla f(\x)) =\x$.
 		\item If $f$ is differentiable, then $D_f(\x,\y) = D_{f^*}(\nabla f(\y), \nabla f(\x))$.
 		\item If $f$ is $\mu$-strongly convex with respect to $||\cdot||$, then $f^*$ is $\frac{1}{\mu}$-smooth with respect to $||\cdot||_*$, where $||\cdot||_*$ is dual to $||\cdot||$.

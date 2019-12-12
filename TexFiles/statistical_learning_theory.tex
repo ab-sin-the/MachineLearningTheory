@@ -697,7 +697,7 @@
 		 
 		 Before we talk about neural network, let's first talk about two properties of growth function.
 		 
-		 \begin{fact}
+		 \begin{fact}\label{Growthfunctionfact}
 		 	Let $\H_1$ and $\H_2$ be two function classes, then
 		 	
 		 	\begin{enumerate}
@@ -708,5 +708,143 @@
 	 
 	 Next, we will talk about neural network.
 	 
-	 	\section{Margin Theory}
+	 \begin{definition}[\bfseries Neural Network]
+	 	Let $X = \R^{d_0}$. A neural network with respect to binary activation is a composition of $f_n $'s.: 
+	 	
+	 	\begin{equation}
+	 	f_l \circ f_{l-1} \cdots f_2 \circ f_1: X \to \{-1,1\},
+	 	\end{equation}
+	 	
+	 	where $f_i:\R^{d_{i-1}} \to \{-1, 1\}^{d_i}$ for $i = 1,\cdots, l-1$ and $f_l: \R^{d_{l-1}} \to \{-1,1\}$.
+	
+	
+	We can see that we have $l$ layers, and each layer has $d_i$ nodes. For a layer $i$ and input $u \in \R^{d_{i-1}}$ the activation function of the $j$th node is
+	
+		\begin{equation}
+			f_{i,j}(u) = sign(w^{i,j}u-\theta^{i,j}), \ j = 1,\cdots, d_i.
+		\end{equation}
+	 \end{definition}
+ 
+ 	Now we start calculating the VC dimension of Neural Network.
+ 	
+ 	Notice that $f_{i,j} \in \H_{i,j}$, where $\H_{i,j}$ is the linear thresholds on $d_{i-1}$ dimensions. We previous show that the VC dimension of linear thresholds in $d_{i-1}$ dimension is $d_{i-1} + 1$.
+ 	
+ 	Therefore, 
+ 	
+ 	\begin{equation*}
+ 		\textmd{VC-dim}(\H_i,j) = d_{i-1} + 1.
+ 	\end{equation*}
+ 
+ 	Furthermore, since $\H_i = \H_{i,1} \times \H_{i,2} \times \cdots \times \H_{i,d_i}$, by \ref{Growthfunctionfact}, we can see that the VC dimension of the $i$th layer function class is 
+ 	
+ 	\begin{equation*}
+ 		\Pi_{\H_i(m)} \leq \prod\limits_{j=1}^{d_i} \Pi_{\H_{i,j}}(m).
+ 	\end{equation*}
+ 	
+ 	In addition, since the entire class of Neural Network is $\F = \H_l \circ \H_{l-1} \circ \cdots \H_1$, by fact \ref{Growthfunctionfact}, we know that
+ 	
+ 	\begin{equation*}
+ 		\begin{aligned}
+ 		 	\Pi_{\F} & \leq \prod\limits_{i=1}^l \Pi_{\H_i}(m) \\
+ 		 			 & \leq \prod\limits_{i=1}^l \prod\limits_{j=1}^{d_i} \Pi_{\H_{i,j}}(m) \\
+ 		 			 & \leq \prod\limits_{i=1}^l \prod\limits_{j=1}^{d_i} m^{d_{i-1} - 1} \\
+ 		 			 & =  m^{\sum\limits_{i=1}^l \sum\limits_{j=1}^{d_i}d_{i-1} - 1}.
+ 		\end{aligned}
+ 	\end{equation*}
+
+	
+	We have the following claim for VC dimension and growth function.
+	
+	\begin{claim}
+		If $\Pi_{\H} \leq m^N$, then
+		
+		\begin{equation}
+			\textmd{VC-dim}(\H) = O(N\log N).
+		\end{equation}
+	\end{claim}
+
+	Therefore, we can see that the VC dimension of Neural Network is 
+	
+	\begin{equation*}
+		O((\sum\limits_{i=1}^l \sum\limits_{j=1}^{d_i}d_{i-1} - 1)\log (\sum\limits_{i=1}^l \sum\limits_{j=1}^{d_i}d_{i-1} - 1))
+	\end{equation*}
+
+	This is a large VC dimension and thus we will need a lot of training data to reduce estimation error. However, this is based on binary activation. When it comes to \textbf{Sigmoid} and \textbf{Relu} activation, we can prove that its VC dimension is $O(T^2)$, where $T$ is the number of operators.
+	
+	\section{Margin Theory}
+	
+	Finally, we  will discuss about Margin Theory. First, let's define margin.
+	
+	\begin{definition}[\bfseries Margin of Linear Classifier]
+		Given a linear classifier function $h_{w}(x) = sign(w \cdot x)$, given dataset $S = \{(x_i,y_i):i=1,\cdots, m \}$, we can define the margin of $h_w$ on $S$ as
+		
+		\begin{equation}
+			\rho(S) = \min\limits_{i=1,\cdots,m} \frac{y_i(w\cdot x_i)}{||w||_2}.
+		\end{equation}
+	\end{definition}
+	
+	The reason we introduce margin is that a classifier with a larger margin can works better and has better generalization. Intuitively, a large margin means the probability of wrongly classifying an input is very small.
+	
+	We hope to find a lower bound on margin. To do that, let's introduce the following class of linear classifier with bounded norm:
+	
+	\begin{definition}[\bfseries Linear Classifiers with Bounded Norm]
+		A linear classifier with bounded norm is defined as 
+		
+		\begin{equation}
+			\H_{\Lambda} := \{h_w:\R^d \to \{-1,1\}, ||w||_2 \leq \Lambda \}.
+		\end{equation}
+	\end{definition}
+
+	Let a loss function $l(\hat{y},y) = \varphi_{\rho}(\hat{y}y)$, where $\varphi_{\rho}(\hat{y}y)$ is defined as
+	
+	\begin{equation*}
+	\varphi_{\rho}(z) = 
+		\begin{cases*}
+			1, \qquad z \leq 0 \\
+			0, \qquad z \geq \rho \\
+			1 - \frac{z}{\rho}, \ 0 \leq z \leq \rho
+		\end{cases*}
+	\end{equation*}
+	
+	We have the following facts for $\rho$.
+	
+	\begin{fact}
+		$\varphi_{\rho}$ is $\frac{1}{\rho}$-Lipschitz.
+	\end{fact}
+
+	For the following content, let's assume without loss of generality that $\rho = 1$ and $||x_i||_2 \leq 1$. Next, we want to derive the relation between margin and Rademacher complexity, so that we can know how well can margin generalize. We can have the following lemma.
+	
+	\begin{lemma}[\bfseries Talagrad]
+		When $l$ is $c$-Lipschitz, we can have that
+		
+		\begin{equation}
+			\hat{\RR}_S(l\circ \H_{\Lambda}) \leq c \hat{\RR}_{S|x}(\H_{\Lambda}).
+		\end{equation}
+		
+	\end{lemma}
+
+	The last theorem in this note then can be derived.
+	
+	\begin{theorem}
+			For any data set $S$ and any $\Lambda$, we have that 
+				\begin{equation}
+					\hat{\RR}_S(\H_{\Lambda}) \leq \frac{\Lambda}{\sqrt{n}}.
+				\end{equation}
+	\end{theorem}
+
+	\begin{proof}
+		\begin{equation*}
+			\begin{aligned}
+				\hat{\RR}_S(\H_{\Lambda}) & = \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{h_w \in \H_{\Lambda}} \sum\limits_{i=1}^m \sigma_i h_w(x_i)] \\
+				& = \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{||w||_2\leq \Lambda } w(\sum\limits_{i=1}^m \sigma_i x_i)]\\
+				& \leq \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{||w||_2\leq \Lambda } ||w||_2 ||\sum\limits_{i=1}^m \sigma_i x_i||_2] \\
+				& 	\leq \EE_{\sigma_1, \cdots, \sigma_n} [\frac{\Lambda}{n}  ||\sum\limits_{i=1}^m \sigma_i x_i||_2] \\
+				& 	\leq \frac{\Lambda}{n}   \sqrt{\EE_{\sigma_1, \cdots, \sigma_n} [||\sum\limits_{i=1}^m \sigma_i x_i||^2_2]} \\	
+				& 	\leq \frac{\Lambda}{n}   \sqrt{\EE_{\sigma_1, \cdots, \sigma_n} [\sum\limits_{i,j} \sigma_i \sigma_j x_i x_j]} \\
+			& 	\leq \frac{\Lambda}{n}   \sqrt{\EE_{\sigma_1, \cdots, \sigma_n} [\sum\limits_{i} \sigma_i^2 x_i^2]} \\	
+			& 	= \frac{\Lambda}{n}   \sqrt{\sum\limits_{i}  x_i^2} \\	
+						& 	= \frac{\Lambda}{\sqrt{n}} .									
+			\end{aligned}
+		\end{equation*}
+	\end{proof}
 \end{document}
