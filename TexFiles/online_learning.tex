@@ -12,9 +12,9 @@ First of all, let's introduce a simple setting of online learning. In this setti
 	\item Goal: predict rain/shine.
 	\item Have a set of $N$ weather experts.
 	\item On each day $t$, expert $i$ predicts $x^t_{i} \in \{0, 1\}$.
-	\item Based on the predictions of experts, the algorithm predicts $\hat{y^t} \in \{0, 1\}$.
+	\item Based on the predictions of experts, the algorithm predicts $\hat{y}^t \in \{0, 1\}$.
 	\item Nature reveals $y^t \in \{0, 1\}$.
-	\item The number of mistakes increases by one if $\hat{y^t} \neq y^t$.
+	\item The number of mistakes increases by one if $\hat{y}^t  \neq y^t$.
 	\item Assume there exists an perfect expert $j$, such that $x^t_{j} = y^t$ for all $t$.
 \end{itemize}
 
@@ -27,7 +27,7 @@ We hope to develop an algorithm $\alg$ such that we can get an upper bound of to
 		\STATE For $t = 1, 2, \cdots$
 		\bindent
 		\STATE Observe $x^t_{i}$, $\forall i \in C_t$.
-		\STATE $\hat{y^t} = round(\frac{1}{|C_t|} \sum\limits_{i\in C_t} x^t_{i})$
+		\STATE $\hat{y}^t = round(\frac{1}{|C_t|} \sum\limits_{i\in C_t} x^t_{i})$
 		\STATE Let $C_{t+1} = C_t$
 		\STATE For all $i \in C_t$
 		\bindentt
@@ -80,7 +80,7 @@ In this section, we change the assumption. We no longer assume that there exists
 
 \begin{itemize}
 	\item $M_T(i) = \sum\limits_{i = 1}^T \mathbf{1}[x^t_i \neq y^t]$
-	\item $M_T(\alg) = \sum\limits_{i = 1}^T \mathbf{1}[\hat{y^t} \neq y^t]$
+	\item $M_T(\alg) = \sum\limits_{i = 1}^T \mathbf{1}[\hat{y}^t \neq y^t]$
 \end{itemize}
 
 In the other words, $M_T(i)$ is the number of mistakes expert $i$ makes up to time $T$ while $M_T(\alg)$ is the number of mistakes the algorithm makes.
@@ -95,7 +95,7 @@ Since we have remove the assumption that there is an expert who will never make 
 		\STATE Let $\epsilon \in (0,1)$ be a parameter we choose.
 		\STATE For $t = 1,2,\cdots $
 		\bindent
-		\STATE Algorithm predicts $\hat{y^t} = round(\frac{\sum\limits_{i = 1}^N w_i^t x_i^t}{\sum\limits_{i = 1}^N w_i^t })$ 
+		\STATE Algorithm predicts $\hat{y}^t = round(\frac{\sum\limits_{i = 1}^N w_i^t x_i^t}{\sum\limits_{i = 1}^N w_i^t })$ 
 		\STATE For $i = 1, \cdots, N$
 		\bindentt
 		\STATE $w_i^{t+1} = w_i^t (1- \epsilon)^{\mathbf{1}[x_i^t \neq y^t]}$
@@ -104,7 +104,7 @@ Since we have remove the assumption that there is an expert who will never make 
 	\end{algorithmic}
 \end{algorithm}
 
-Intuitively, different from halving algorithm, in weighted majority algorithm, if an expert makes a mistake, we will reduce its weight rather than remove it from the set. The expert will still have contribution to the algorithm but the weight is smaller. One can also see that halving algorithm is a special case of weighted majority algorithm when $\epsilon = 1$.
+Intuitively, different from halving algorithm, in weighted majority algorithm, if an expert makes a mistake, we will reduce its weight rather than removing it from the set. The expert will still have contribution to the algorithm but the weight is smaller. One can also see that halving algorithm is a special case of weighted majority algorithm when $\epsilon = 1$.
 
 For this algorithm, we have the following theorem:
 
@@ -190,7 +190,7 @@ This concludes our discussion about weighted majority algorithm. We will now sta
 	\item Setting 1: Continuous Prediction
 	\begin{itemize}
 		\item At time $t$, each expert $i$ predicts $x_i^t \in [0,1]$.
-		\item Algorithm predicts $\hat{y^t} \in [0,1]$.
+		\item Algorithm predicts $\hat{y}^t \in [0,1]$.
 		\item Nature outcomes $y^t \in \{0,1\}$.
 		\item We have a convex loss function $l:[0,1] \times \{0,1\} \to \R$.
 		\item The loss of expert $i$ at $t$ is $l(x_i^t, y^t)$.
@@ -242,7 +242,7 @@ Now we will give the algorithm details of Exponential Weights Algorithm:
 		\STATE Prediction Setting:
 		\bindentt
 		\STATE Observe $x_1^t, \cdots ,x_N^t$
-		\STATE Output $\hat{y^t} = (\sum\limits_{i=1}^N w_i^t x_i^t) / (\sum\limits_{i=1}^N w_i^t)$
+		\STATE Output $\hat{y}^t = (\sum\limits_{i=1}^N w_i^t x_i^t) / (\sum\limits_{i=1}^N w_i^t)$
 		\STATE Observed $y^t$.
 		\eindentt
 		\STATE Hedge Setting:
@@ -337,7 +337,7 @@ From corollary \ref{ewa_corollary}, we know that by choosing $\eta$ carefully, w
 
 It shows that $\frac{Regret_T }{T}$ will goes to zero as $T \to \infty$. 
 
-Hedge setting and prediction setting belong to a category called full information setting. It means besides the choice algorithm makes, it also knows the loss of all alternative choices. Next we will talk about Perception Algorithms.
+Hedge setting and prediction setting belong to a category called full information setting. It means besides the choice algorithm makes, it also knows the loss of all alternative choices. Next we will talk about Perception Algorithm.
 
 \section{Perception}
 
@@ -346,7 +346,7 @@ We now introduce a new setting called linear prediction setting:
 \begin{itemize}
 	\item At time t, observe $x^t \in \R^d$ with $||x^t||_1 \leq 1$.
 	\item Define linear predictor as a function $h_w(\cdot)$ parameterized by $w \in \R^d$ and $h_w(\cdot) = sign(w \cdot x)$.
-	\item Predict $\hat{y^t} \in \{-1, 1\}$ using some linear predictor.
+	\item Predict $\hat{y}^t \in \{-1, 1\}$ using some linear predictor.
 	\item Outcome $y^t \in \{-1, 1\}$.
 \end{itemize}
 

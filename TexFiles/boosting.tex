@@ -20,7 +20,7 @@ The weak lemma condition states that for any distribution $\p \in \Delta_n$, the
 
 \end{definition}
 
-In other words, it means that there exists a learner whose probability of being right is at least $\frac{1}{2} + \gamma$ for any distribution $\p$.
+In other words, it means that there exists a learner whose probability of being correct is at least $\frac{1}{2} + \gamma$ for any distribution $\p$.
 
 \begin{definition}[\bfseries Strong Lemma Condition]
 The strong lemma condition states that $\exists \qb \in \Delta (\H)$ such that for every $(x,y)$ in sample, 
@@ -110,7 +110,7 @@ Thus, $\forall$ $i$, $F_{\tilde{\qb}} (x_i) = y_i$.
 
 After this, we try to solve this zero-sum game using exponential weights algorithm.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\floatname{algorithm}{}
 	\begin{algorithmic}
 		\STATE For $t = 1, \cdots ,T$
@@ -128,6 +128,8 @@ After this, we try to solve this zero-sum game using exponential weights algorit
 		\eindent
 	\end{algorithmic}
 \end{algorithm}
+
+
 
 The following theorem holds for this algorithm:
 

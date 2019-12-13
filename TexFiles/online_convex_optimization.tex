@@ -34,8 +34,8 @@ Let's see three examples about online convex optimization.
 		\item $w^t$ is the distribution of $n$ stocks fluctuations.
 		\item $r^t$ is the vector of price, where $r^t(i) = \frac{Price_t(stock_i)}{Price_{t-1}(stock_i)}$.
 		\item $f_t(w^t) = -\log(w^t r^t) $.
-		\item $\sum\limits_{t=1}^T f_t(w^t) = -\log(\Pi_{t= 1}^T (w^t r^t)) $.
-		\item $\min\limits_{w\in \Delta_n} \sum\limits_{t=1}^T f_t(w) = -\log(\max\limits_{w\in \Delta_n} \Pi_{t= 1}^T (w r^t)) $ = negative log wealth of best portfolio.
+		\item $\sum\limits_{t=1}^T f_t(w^t) = -\log(\prod_{t= 1}^T (w^t r^t)) $.
+		\item $\min\limits_{w\in \Delta_n} \sum\limits_{t=1}^T f_t(w) = -\log(\max\limits_{w\in \Delta_n} \prod_{t= 1}^T (w r^t)) $ = negative log wealth of best portfolio.
 	\end{itemize}
 	
 	In this example, basically the loss function is minimized when money is put into the stock whose value will grow higher at time $t$. 
@@ -233,7 +233,7 @@ Then, let's start proving the convergence of OGD.
 	Gradient Descent algorithm for minimization one convex function $f(\cdot)$ with respect to averaging converge at a rate of $O(\frac{GD}{\sqrt{T}})$.
 \end{corollary}
 
-It's surprise to find that the convergence rate of OGD is the same as normal gradient descent algorithm when they output the averaging.
+It's surprising to find that the convergence rate of OGD is the same as normal gradient descent algorithm when they output the average.
 
 Next, we will talk about Stochastic Gradient Descent, its setting and convergence rate. We will see that we can use OGD to prove its convergence rate easily.
 

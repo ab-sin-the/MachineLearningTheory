@@ -13,7 +13,7 @@ First of all, some simple definitions from measure theory will be discussed.
 The definition of measurable function and sigma algebra is included in measure theory, which will not be discussed here.
 
 \begin{definition}[\bfseries Cumulative Distribution Function]
-	The CDF (cumulative distribution function) pf a random variable $X$ is defined as 
+	The CDF (cumulative distribution function) of a random variable $X$ is defined as 
 	\begin{equation}
 		F(t) := \Pr(X \leq t).
 	\end{equation}
@@ -65,7 +65,7 @@ After the above definitions, we will next introduction some useful deviation bou
 
 Since $\Pr(X\geq t) = 1 - F(t)$, we can know from above theorem that $F(t) \geq 1 - \frac{\EE(X)}{t} $.
 
-\begin{theorem}[Chebyshev's Inequality]
+\begin{theorem}[\bfseries Chebyshev's Inequality]
 	Let $\EE(X) = \mu$ and $Var(X) = \sigma^2$, then $\Pr(|X - \mu| \geq t) \leq \frac{\sigma^2}{t^2}$.
 \end{theorem}
 
@@ -82,7 +82,7 @@ It turns out that this theorem can be easily proved with Markov Inequality.
 
 Next, we will define gaussian distribution (also called normal distribution).
 
-\begin{theorem}[Gaussian Distribution]
+\begin{theorem}[\bfseries Gaussian Distribution]
 	Let's say $X \sim N(\mu, \sigma^2)$, it means that the pdf of $X$ is 
 		\begin{equation*}
 			P(X = x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp(-\frac{(x-\mu)^2}{2\sigma^2}).
@@ -95,11 +95,11 @@ This distribution is heavily used in many different areas.
 	If $X \sim N(0, \sigma)$, and $t > 0$, then $\EE[\exp(tX)] = \exp(\frac{t^2s^2}{2})$.
 \end{fact}
 
-This can be proved just by taking integral of this pdf function.
+This can be proved by just taking integral of this pdf function.
 
 Next, we will define subgaussian distribution, which will be used later in some inequalities.
 
-\begin{definition}[Subgaussian Distribution]
+\begin{definition}[\bfseries Subgaussian Distribution]
 	A random variable $X$ with $\EE(X) = 0$ is a subgaussian distribution with respect to variance proxy $\sigma^2$ if 
 	\begin{equation}
 		\EE[\exp(tX)] \leq \exp(\frac{t^2\sigma^2}{2}).
@@ -142,11 +142,11 @@ We will next give the proof of this theorem.
 			\Pr(\bar{X_n} - \mu > t) & = \Pr(\exp(s(\bar{X_n} - \mu)) > \exp(st)) \\
 									(\textmd{Markov Inequality}) & \leq \frac{\EE[\exp(s(\bar{X_n} - \mu))]}{\exp(st)} \\
 																& = \exp(-st)  \EE[\exp(s(\bar{X_n} - \mu))]\\
-																& = \exp(-st)  \EE[\Pi_{i=1}^n \exp(\frac{s}{n} (X_i - \mu_i))] \\
-															(\textmd{Independence})	& = \exp(-st) \Pi_{i=1}^n \EE[ \exp(\frac{s}{n} (X_i - \mu_i))] \\
-														(X_i - \mu_i\ \textmd{Subgaussian})	& \leq  \exp(-st) \Pi_{i=1}^n \exp(\frac{s^2}{8n^2} (b_i - a_i)^2) \\
+																& = \exp(-st)  \EE[\prod_{i=1}^n \exp(\frac{s}{n} (X_i - \mu_i))] \\
+															(\textmd{Independence})	& = \exp(-st) \prod_{i=1}^n \EE[ \exp(\frac{s}{n} (X_i - \mu_i))] \\
+														(X_i - \mu_i\ \textmd{Subgaussian})	& \leq  \exp(-st) \prod_{i=1}^n \exp(\frac{s^2}{8n^2} (b_i - a_i)^2) \\
 														& = \exp(\frac{s^2}{8n^2} \sum\limits_{i=1}^n (a_i - b_i)^2 - st ) \\
-												(s\ \textmd{takes}\ \frac{4tn^2}{\sum\limits_{i=1}^n (a_i - b_i)^2})& = \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2}) 
+												(s\ \textmd{takes}\ \frac{4tn^2}{\sum\limits_{i=1}^n (a_i - b_i)^2})& \leq \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2}) 
 		\end{aligned}
 	\end{equation*}
 	Similarly, we can prove that $\Pr(\bar{X_n} - \mu < -t) \leq \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2}) $. Combine the above two conclusions and we can get that $\Pr(|\bar{X_n} - \mu| > t) \leq 2 \exp(\frac{-2t^2n^2}{\sum\limits_{i=1}^n (a_i - b_i)^2})$.

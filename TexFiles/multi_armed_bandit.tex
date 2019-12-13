@@ -3,7 +3,7 @@
 \begin{document}
 \chapter{Multi-Armed Bandit}
 
-In "full information" setting, in addition to the strategy the player takes, he can also computes the loss of alternative action. This is not the case in Multi-Armed Bandit setting. In Bandit, feedback is only limited to the selected action that user takes. The protocol is following:
+In "full information" setting, in addition to the strategy the player takes, the player can also computes the loss of alternative action. This is not the case in Multi-Armed Bandit setting. In Bandit, feedback is only limited to the selected action that user takes. The protocol is following:
 
 
 \begin{algorithm}
@@ -360,7 +360,7 @@ One problem of this algorithm is that it assumed that $\Delta_* = \min\limits_{i
 	To bound the probability, let's define a good case for arm $i$ as
 	
 	\begin{equation*}
-		G_i = \{ \mu_1 > UCB_1^t, \forall t = 1,\cdots, T\} \wedge \{\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} < \mu_1 \},
+		G_i = \{ \mu_1 < UCB_1^t, \forall t = 1,\cdots, T\} \wedge \{\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} < \mu_1 \},
 	\end{equation*}
 	
 	where
@@ -372,7 +372,7 @@ One problem of this algorithm is that it assumed that $\Delta_* = \min\limits_{i
 	\end{cases}
 	\end{equation*}
 	
-	Basically, $\hat{\mu_i}^{(K_i)}$ is the empirical average of reward from arm $i$ when it is sampled $K_i$ times. Therefore, the good case states that the UCB of the best arm estimates its true expectation and the UCB of arm $i$ when its sampled $K_i$ times is smaller than the true expectation of arm $1$.
+	Basically, $\hat{\mu_i}^{(K_i)}$ is the empirical average of reward from arm $i$ when it is sampled $K_i$ times. Therefore, the good case states that the UCB of the best arm overestimates its true expectation and the UCB of arm $i$ when its sampled $K_i$ times is smaller than the true expectation of arm $1$.
 	
 	
 	Using this, we can have the following claim.
@@ -418,15 +418,15 @@ One problem of this algorithm is that it assumed that $\Delta_* = \min\limits_{i
 		
 		Then, let's try to bound $\Pr(\neg G_i)$. Notice that 
 		\begin{equation*}
-			\neg G_i = \{ \mu_1 \leq UCB_1^t, \exists t = 1,\cdots, T\} \vee \{\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 \}.
+			\neg G_i = \{ \mu_1 \geq UCB_1^t, \exists t = 1,\cdots, T\} \vee \{\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 \}.
 		\end{equation*}		
 		
 		Then, we know that 
 		
 		\begin{equation*}
 			\begin{aligned}
-				\Pr(\neg G_i) & \leq \Pr(\mu_1 \leq UCB_1^t, \exists t = 1,\cdots, T) + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
-							  & \leq \sum\limits_{s=1}^t \Pr(\mu_1 \leq UCB_1^s) +   \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
+				\Pr(\neg G_i) & \leq \Pr(\mu_1 \geq UCB_1^t, \exists t = 1,\cdots, T) + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
+							  & \leq \sum\limits_{s=1}^t \Pr(\mu_1 \geq UCB_1^s) +   \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
 							  (\textmd{Claim \ref{UCB_claim_1}})\ & \leq t\delta + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_1 ) \\
 							  & = t\delta + \Pr(\hat{\mu_i}^{(K_i)} + \sqrt{\frac{2\log 1/ \delta}{K_i}} \geq \mu_i + \Delta_i ) \\
 							  & = t\delta + \Pr(\mu_i  - \hat{\mu_i}^{(K_i)} \leq  \sqrt{\frac{2\log 1/ \delta}{K_i}} - \Delta_i ) \\

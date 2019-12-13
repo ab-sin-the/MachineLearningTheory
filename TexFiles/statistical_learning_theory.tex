@@ -4,7 +4,7 @@
 	\chapter{Statistical Learning Theory}
 	
 	\section{Statistical Learning Setting}
-	In this chapter, we will talk about statistical learning theory. We will introduce several concept, like VC dimension, Rademacher Complexity. We will also talk about many lemmas to connect these definitions. Finally, we will apply our tools to models like Neural Network, etc.
+	In this chapter, we will talk about statistical learning theory. We will introduce several concepts, like VC dimension, Rademacher Complexity. We will also talk about many lemmas to connect these definitions. Finally, we will apply our tools to models like Neural Network, etc.
 	
 	To begin with, let's discuss the setting in statistical learning.
 	
@@ -204,7 +204,7 @@
 		with probability at least $1-\delta$.
 	\end{proof}
 
-	This concludes our discussion about empirical risk minimization when $|\H|$ is finite. We can see that if $|\H|$ is finite, the model we learn from data compared with the best model in the function class has bounded error ($\sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}}$). This also shows that if we increase the number of samples, we could get closer to the best model in function class. 
+	This concludes our discussion about empirical risk minimization when $|\H|$ is finite. We can see that if $|\H|$ is finite, the model we learn from data compared with the best model in the function class has bounded error $O(\sqrt{\frac{\log 2 / \delta + \log |\H|}{2n}})$. This also shows that if we increase the number of samples, we could get closer to the best model in function class. 
 	
 	However, what if $|\H|$ is not finite? This is quite common for most statistical learning model. To handle this situation, we need to give some more definitions that will be used. 
 	
@@ -213,7 +213,7 @@
 	\begin{definition}[\bfseries Growth Function]
 		The growth function of a function class $\H$ is defined as
 		\begin{equation*}
-			\Pi_{\H}(m) = \sup\limits_{S= \{x_1, \cdots, x_m\} \subset X} |\{(h(x_1), \cdots, h(x_m))\} : h\in \H|.
+			\Pi_{\H}(n) = \sup\limits_{S= \{x_1, \cdots, x_n\} \subset X} |\{(h(x_1), \cdots, h(x_n))\} : h\in \H|.
 		\end{equation*}
 	\end{definition}
 
@@ -223,11 +223,11 @@
 	
 	\begin{claim}
 			\begin{equation*}
-				\Pi_{\H}(m) \leq 2^m.
+				\Pi_{\H}(n) \leq 2^n.
 			\end{equation*}
 	\end{claim} 
 	
-	This is intuitive since the number of different vectors with length $m$ and each element can take only two values is definitely not larger than $2^m$.
+	This is intuitive since the number of different vectors with length $n$ and each element can take only two values is definitely not larger than $2^n$.
 	
 	Using growth function, we can give another important definition
 	
@@ -270,9 +270,9 @@
 	\end{definition}
 	
 	\begin{definition}[\bfseries Empirical Rademacher Complexity]
-		Give samples $S = \{X_1,\cdots X_m\} \in X$, the Empirical Rademacher Complexity of a function class $\H$ is defined as
+		Give samples $S = \{X_1,\cdots X_n\} \in X$, the Empirical Rademacher Complexity of a function class $\H$ is defined as
 			\begin{equation}
-				\hat{\RR}_S(\H) = \EE_{\sigma_1,\cdots,\sigma_n} [\frac{1}{m} \sup\limits_{h\in \H} \sum\limits_{i=1}^n \sigma_i h(x_i)],
+				\hat{\RR}_S(\H) = \EE_{\sigma_1,\cdots,\sigma_n} [\frac{1}{n} \sup\limits_{h\in \H} \sum\limits_{i=1}^n \sigma_i h(x_i)],
 			\end{equation}
 		where $\sigma_1\cdots \sigma_n$ is Rademacher random variables.
 	\end{definition}
@@ -318,7 +318,7 @@
 	
 	\begin{theorem}[\bfseries Symmetrization Lemma]\label{symmetric_lemma}
 		
-		Let $S = (x_1,\cdots, x_m) \sim D^m$, let $h \in \H$ be bounded in $[0,1]$, then $\forall h\in \H$, it holds that 
+		Let $S = (x_1,\cdots, x_n) \sim D^n$, let $h \in \H$ be bounded in $[0,1]$, then $\forall h\in \H$, it holds that 
 		
 		\begin{equation}
 			\hat{\EE}_S h - \EE h  \leq 2 \RR_n(H) + \sqrt{\frac{\log 1 / \delta}{2n}}
@@ -465,9 +465,9 @@
 				& = \EE_{\sigma_1, \cdots, \sigma_n} [\sup\limits_{a\in A} \exp(\lambda   \sum\limits_{i=1}^n a_i \sigma_i)] \\
 				& \leq \EE_{\sigma_1, \cdots, \sigma_n} [\sum\limits_{a\in A} \exp(\lambda   \sum\limits_{i=1}^n a_i \sigma_i)] \\
 				& \leq \sum\limits_{a\in A} \EE_{\sigma_1, \cdots, \sigma_n} [ \exp(\lambda   \sum\limits_{i=1}^n a_i \sigma_i)] \\
-				& \leq \sum\limits_{a\in A} \EE_{\sigma_1, \cdots, \sigma_n} [ \Pi_{i=1}^n \exp(\lambda  a_i \sigma_i)] \\
-				& \leq \sum\limits_{a\in A}  \Pi_{i=1}^n  \EE_{\sigma_1, \cdots, \sigma_n} [\exp(\lambda  a_i \sigma_i)] \\
-			(Hoeffding)	& \leq \sum\limits_{a\in A}  \Pi_{i=1}^n  \exp(\frac{\lambda^2 a_i^2}{2})\\
+				& \leq \sum\limits_{a\in A} \EE_{\sigma_1, \cdots, \sigma_n} [ \prod_{i=1}^n \exp(\lambda  a_i \sigma_i)] \\
+				& \leq \sum\limits_{a\in A}  \prod_{i=1}^n  \EE_{\sigma_1, \cdots, \sigma_n} [\exp(\lambda  a_i \sigma_i)] \\
+			(Hoeffding)	& \leq \sum\limits_{a\in A}  \prod_{i=1}^n  \exp(\frac{\lambda^2 a_i^2}{2})\\
 				& \leq \sum\limits_{a\in A}   \exp(\frac{\lambda^2  \sum\limits_{i=1}^n a_i^2}{2}) \\
 				& \leq \sum\limits_{a\in A}   \exp(\frac{\lambda^2  r^2}{2}) \\
 				& \leq |A| \exp(\frac{\lambda^2  r^2}{2}).
@@ -543,7 +543,7 @@
 		\begin{enumerate}
 		\item $\Pi_{\H}(n) = \max\limits_{|S| = n} \#\ rows(M_{S,\H})$
 		
-		\item If all rows of $M_{S,\H}$ have $\leq$ $d$ $1$s, then $\#\ rows(M_{S,\H})\leq \sum\limits_{i=0}^d \binom{m}{i}$.
+		\item If all rows of $M_{S,\H}$ have $\leq$ $d$ $1$s, then $\#\ rows(M_{S,\H})\leq \sum\limits_{i=0}^d \binom{n}{i}$.
 
 		\end{enumerate}
 		\end{fact}
@@ -551,7 +551,7 @@
 		
 		The way we modify the matrix is very simple.
 		
-		\begin{algorithm}[]
+		\begin{algorithm}[H]
 			\floatname{algorithm}{}
 			\begin{algorithmic}
 			\STATE For epoch = $1, 2,\cdots $
@@ -579,7 +579,7 @@
 		
 		Assume towards contradiction that after shifting some column $j$, a new subset $U\subset [n]$ was suddenly shattered. This must mean that $\exists$ rows $i,k$ such that $M(i,U) = M(k,U)$ before shifting but $M'(i,U) \neq M'(k,U)$ after shifting.
 		
-		Without loss of generality let $M(k,j) = 1$ and $M'(k,j) = 0$, thus $M(i,j) = 1$ and $M'(i,j) = $.
+		Without loss of generality let $M(k,j) = 1$ and $M'(k,j) = 0$, thus $M(i,j) = 1$ and $M'(i,j) = 1$.
 		
 		We do not change $M'(i,j)$ into $0$ because there exists a row $l\neq k$ that $l$ would be duplicate if we change $M'(i,j)$ into zero. 
 		
@@ -591,7 +591,7 @@
 		 Now that we have all above tools, we want to give a generalization bound on estimation error 
 		 
 		 \begin{equation*}
-		 		 \sup\limits_{h\in H}(\frac{1}{n} \sum\limits_{i=1}^n l(h(x_i),y_i)) - \EE_{(x,y)\sim D} l(h(x),y).
+		 		 \sup\limits_{h\in H}(\frac{1}{n} \sum\limits_{i=1}^n l(h(x_i),y_i) - \EE_{(x,y)\sim D} l(h(x),y)).
 		 \end{equation*}
 		 
 		 Notice that in our setting, we have a hypothesis class $\H: X \to \hat{Y}$ and a loss function $l: \hat{Y} \times Y \to \R$. Actually, the loss function itself is a set of functions 
@@ -680,8 +680,8 @@
 		 		
  		\begin{equation}
  		\begin{aligned}
- 	&\Pr\limits_{(x,y) \sim D_\sigma} ((x,y) = (x_i, 1)) = (\frac{1}{2} + c\sigma_i \frac{d}{m}) \frac{1}{d} \\
- 	&\Pr\limits_{(x,y) \sim D_\sigma} ((x,y) = (x_i, 0)) = (\frac{1}{2} - c\sigma_i \frac{d}{m}) \frac{1}{d} 
+ 	&\Pr\limits_{(x,y) \sim D_\sigma} ((x,y) = (x_i, 1)) = (\frac{1}{2} + c\sigma_i \frac{d}{n}) \frac{1}{d} \\
+ 	&\Pr\limits_{(x,y) \sim D_\sigma} ((x,y) = (x_i, 0)) = (\frac{1}{2} - c\sigma_i \frac{d}{n}) \frac{1}{d} 
  		\end{aligned}
  		\end{equation} 
  		
@@ -701,8 +701,8 @@
 		 	Let $\H_1$ and $\H_2$ be two function classes, then
 		 	
 		 	\begin{enumerate}
-		 		\item If $\H_1$ and $\H_2$ both map $X\to Y$, then $\Pi_{\H_1 \times \H_2}(m) \leq \Pi_{\H_1}(m) \cdot \Pi_{\H_2}(m) $.
-		 		\item If $\H_1$ maps $X\to Y$ and $\H_2$ maps $Y\to Z$, then  $\Pi_{\H_1 \circ \H_2}(m) \leq \Pi_{\H_1}(m) \cdot \Pi_{\H_2}(m) $.
+		 		\item If $\H_1$ and $\H_2$ both map $X\to Y$, then $\Pi_{\H_1 \times \H_2}(n) \leq \Pi_{\H_1}(n) \cdot \Pi_{\H_2}(n) $.
+		 		\item If $\H_1$ maps $X\to Y$ and $\H_2$ maps $Y\to Z$, then  $\Pi_{\H_1 \circ \H_2}(n) \leq \Pi_{\H_1}(n) \cdot \Pi_{\H_2}(n) $.
 		 	\end{enumerate}
 		 \end{fact}
 	 
@@ -732,23 +732,23 @@
  	Therefore, 
  	
  	\begin{equation*}
- 		\textmd{VC-dim}(\H_i,j) = d_{i-1} + 1.
+ 		\textmd{VC-dim}(\H_{i,j}) = d_{i-1} + 1.
  	\end{equation*}
  
- 	Furthermore, since $\H_i = \H_{i,1} \times \H_{i,2} \times \cdots \times \H_{i,d_i}$, by \ref{Growthfunctionfact}, we can see that the VC dimension of the $i$th layer function class is 
+ 	Furthermore, since $\H_i = \H_{i,1} \times \H_{i,2} \times \cdots \times \H_{i,d_i}$, by \ref{Growthfunctionfact}, we can see that the growth function of the $i$th layer function class is 
  	
  	\begin{equation*}
- 		\Pi_{\H_i(m)} \leq \prod\limits_{j=1}^{d_i} \Pi_{\H_{i,j}}(m).
+ 		\Pi_{\H_i(n)} \leq \prod\limits_{j=1}^{d_i} \Pi_{\H_{i,j}}(n).
  	\end{equation*}
  	
  	In addition, since the entire class of Neural Network is $\F = \H_l \circ \H_{l-1} \circ \cdots \H_1$, by fact \ref{Growthfunctionfact}, we know that
  	
  	\begin{equation*}
  		\begin{aligned}
- 		 	\Pi_{\F} & \leq \prod\limits_{i=1}^l \Pi_{\H_i}(m) \\
- 		 			 & \leq \prod\limits_{i=1}^l \prod\limits_{j=1}^{d_i} \Pi_{\H_{i,j}}(m) \\
- 		 			 & \leq \prod\limits_{i=1}^l \prod\limits_{j=1}^{d_i} m^{d_{i-1} - 1} \\
- 		 			 & =  m^{\sum\limits_{i=1}^l \sum\limits_{j=1}^{d_i}d_{i-1} - 1}.
+ 		 	\Pi_{\F} & \leq \prod\limits_{i=1}^l \Pi_{\H_i}(n) \\
+ 		 			 & \leq \prod\limits_{i=1}^l \prod\limits_{j=1}^{d_i} \Pi_{\H_{i,j}}(n) \\
+ 		 			 & \leq \prod\limits_{i=1}^l \prod\limits_{j=1}^{d_i} n^{d_{i-1} - 1} \\
+ 		 			 & =  n^{\sum\limits_{i=1}^l \sum\limits_{j=1}^{d_i}d_{i-1} - 1}.
  		\end{aligned}
  	\end{equation*}
 
@@ -756,10 +756,10 @@
 	We have the following claim for VC dimension and growth function.
 	
 	\begin{claim}
-		If $\Pi_{\H} \leq m^N$, then
+		If $\Pi_{\H} \leq m^n$, then
 		
 		\begin{equation}
-			\textmd{VC-dim}(\H) = O(N\log N).
+			\textmd{VC-dim}(\H) = O(n\log n).
 		\end{equation}
 	\end{claim}
 
@@ -776,14 +776,14 @@
 	Finally, we  will discuss about Margin Theory. First, let's define margin.
 	
 	\begin{definition}[\bfseries Margin of Linear Classifier]
-		Given a linear classifier function $h_{w}(x) = sign(w \cdot x)$, given dataset $S = \{(x_i,y_i):i=1,\cdots, m \}$, we can define the margin of $h_w$ on $S$ as
+		Given a linear classifier function $h_{w}(x) = sign(w \cdot x)$, given data set $S = \{(x_i,y_i):i=1,\cdots, n \}$, we can define the margin of $h_w$ on $S$ as
 		
 		\begin{equation}
-			\rho(S) = \min\limits_{i=1,\cdots,m} \frac{y_i(w\cdot x_i)}{||w||_2}.
+			\rho(S) = \min\limits_{i=1,\cdots,n} \frac{y_i(w\cdot x_i)}{||w||_2}.
 		\end{equation}
 	\end{definition}
 	
-	The reason we introduce margin is that a classifier with a larger margin can works better and has better generalization. Intuitively, a large margin means the probability of wrongly classifying an input is very small.
+	The reason we introduce margin is that a classifier with a larger margin can work better and has better generalization. Intuitively, a large margin means the probability of wrongly classifying an input is very small.
 	
 	We hope to find a lower bound on margin. To do that, let's introduce the following class of linear classifier with bounded norm:
 	
@@ -835,10 +835,10 @@
 	\begin{proof}
 		\begin{equation*}
 			\begin{aligned}
-				\hat{\RR}_S(\H_{\Lambda}) & = \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{h_w \in \H_{\Lambda}} \sum\limits_{i=1}^m \sigma_i h_w(x_i)] \\
-				& = \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{||w||_2\leq \Lambda } w(\sum\limits_{i=1}^m \sigma_i x_i)]\\
-				& \leq \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{||w||_2\leq \Lambda } ||w||_2 ||\sum\limits_{i=1}^m \sigma_i x_i||_2] \\
-				& 	\leq \EE_{\sigma_1, \cdots, \sigma_n} [\frac{\Lambda}{n}  ||\sum\limits_{i=1}^m \sigma_i x_i||_2] \\
+				\hat{\RR}_S(\H_{\Lambda}) & = \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{h_w \in \H_{\Lambda}} \sum\limits_{i=1}^n \sigma_i h_w(x_i)] \\
+				& = \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{||w||_2\leq \Lambda } w(\sum\limits_{i=1}^n \sigma_i x_i)]\\
+				& \leq \EE_{\sigma_1, \cdots, \sigma_n} [\frac{1}{n} \sup\limits_{||w||_2\leq \Lambda } ||w||_2 ||\sum\limits_{i=1}^n \sigma_i x_i||_2] \\
+				& 	\leq \EE_{\sigma_1, \cdots, \sigma_n} [\frac{\Lambda}{n}  ||\sum\limits_{i=1}^n \sigma_i x_i||_2] \\
 				& 	\leq \frac{\Lambda}{n}   \sqrt{\EE_{\sigma_1, \cdots, \sigma_n} [||\sum\limits_{i=1}^m \sigma_i x_i||^2_2]} \\	
 				& 	\leq \frac{\Lambda}{n}   \sqrt{\EE_{\sigma_1, \cdots, \sigma_n} [\sum\limits_{i,j} \sigma_i \sigma_j x_i x_j]} \\
 			& 	\leq \frac{\Lambda}{n}   \sqrt{\EE_{\sigma_1, \cdots, \sigma_n} [\sum\limits_{i} \sigma_i^2 x_i^2]} \\	

@@ -42,7 +42,7 @@ Notice that if $f$ is a twice differentiable function and $\xb \in \R^n$, then $
 Next, we will talk about convexity, its definition and several useful facts.
 
 \begin{definition}[\bfseries Convex Set]
-	Let $\K \subset \R^n$, set $\K$ is called a convex set if  $\ \forall \xb,\yb \in \K$ and $\forall t \in [0,1]$, we have
+	Let $\K \subset \R^n$, a set $\K$ is called a convex set if  $\ \forall \xb,\yb \in \K$ and $\forall t \in [0,1]$, we have
 	
 	\begin{equation}
 		t\xb + (1-t)\yb \in \K.
@@ -70,7 +70,7 @@ Next, we will talk about convexity, its definition and several useful facts.
 
 An intuition behind this claim is that $f$ is convex if and only if the first order approximation of $f$ at any point $\yb$ is not larger than the function itself.
 \begin{claim}
-	Let $\K \subset \R^n$ be a convex set and $f: \K \to \R$ be a twice differentiable function. Then $f$ is convex if and only if  $\forall \xb \in \K$, 
+	Let $\K \subset \R^n$ be a convex set and $f: \K \to \R$ be a twice differentiable function, then $f$ is convex if and only if  $\forall \xb \in \K$, 
 	
 	\begin{equation}
 		\nabla^2 f(\xb) \succeq 0. \label{convex_f_3}
@@ -78,7 +78,7 @@ An intuition behind this claim is that $f$ is convex if and only if the first or
 \end{claim}
 
 \begin{remark}
-	 It can be seen that above three formulas \eqref{convex_f_1}, \eqref{convex_f_2} and \eqref{convex_f_3} are equivalent. However, in reality, if $f$ is twice differentiable, using \eqref{convex_f_3} is much simpler than using \eqref{convex_f_1} or \eqref{convex_f_2}, because it only contains one variable in $\K$ and we only need to determine if $\nabla^2f(\xb)$ is PSD or not.
+	 It can be seen that above three formulas \eqref{convex_f_1}, \eqref{convex_f_2} and \eqref{convex_f_3} are equivalent. However, in reality, if $f$ is twice differentiable, using \eqref{convex_f_3} is much simpler than using \eqref{convex_f_1} or \eqref{convex_f_2}, because it only contains one variable in $\K$ and we only need to determine if $\nabla^2f(\xb)$ is a PSD matrix or not.
 	 
 	   In facts, many functions satisfy this condition. Some examples are $f(\xb) = \xb^T \xb$, $f(\xb) = 1$, etc.
 \end{remark}
@@ -100,8 +100,8 @@ An intuition behind this claim is that $f$ is convex if and only if the first or
 We can see that one example of concave function is $log$ function.
 
 
-\begin{definition}[Lipschitz]
-	Let $||\cdot||$ be a norm, $c \geq 0$ and $f:\R^n \to \R$. Then $f$ is called $c-Lipschitz$ with respect to $||\cdot||$ if $\forall \xb, \yb \in \R^n$, 
+\begin{definition}[\bfseries Lipschitz]
+	Let $||\cdot||$ be a norm, $c \geq 0$ and $f:\R^n \to \R$. Then $f$ is called $c$-Lipschitz with respect to $||\cdot||$ if $\forall \xb, \yb \in \R^n$, 
 	
 	\begin{equation}
 		|f(\xb) - f(\yb)| \leq c||\xb - \yb||.
@@ -120,7 +120,7 @@ We can see that one example of concave function is $log$ function.
 \begin{proof}
 	We first prove the 'if' part.
 	
-	Let $||\cdot||$ be a norm on $\R^n$ and $c \geq 0$, let $||\nabla f(\xb)||_* \leq c $ $\forall \xb \in \R^n$. Then, by the mean value theorem, $\forall \xb, \yb \in\R^n$, there exists $t\in [0,1]$ such that 
+	Let $||\cdot||$ be a norm on $\R^n$ and $c \geq 0$, let $||\nabla f(\xb)||_* \leq c \ $, $\forall \xb \in \R^n$. Then, by the mean value theorem, $\forall \xb, \yb \in\R^n$, there exists $t\in [0,1]$ such that 
 	\begin{equation*}
 		f(\xb) = f(\yb) + \langle \nabla f((1-t) \xb + t \yb) , \xb - \yb \rangle.
 	\end{equation*}
@@ -196,7 +196,7 @@ We can see that one example of concave function is $log$ function.
 
 
 \begin{definition}[\bfseries Strongly Convex]
-	Let $\K$ be a convex set, $f: \K \to \R$ be a differentiable function and $\alpha > 0$. Then $f$ os $\alpha$-strongly convex with respect to $||\cdot||$ if $\forall \xb, \yb \in \K$, 
+	Let $\K$ be a convex set, $f: \K \to \R$ be a differentiable function and $\alpha > 0$. Then $f$ is $\alpha$-strongly convex with respect to $||\cdot||$ if $\forall \xb, \yb \in \K$, 
 	\begin{equation}
 		f(\xb) \geq f(\yb) + \langle \nabla f(\yb), \xb - \yb \rangle + \frac{\alpha}{2} ||\xb - \yb||^2.
 	\end{equation}
@@ -221,7 +221,7 @@ Notice that if $f$ is strongly convex, then it must be a convex function. In add
 Notice that in contrast to strongly convex, a smooth function grows \textbf{at most} quadratically.
 
 \begin{claim}\label{smooth-lemma}
-	We have a similar claim for smooth function to strongly convex function. That is, let $f$: dom($f$) $\to \R$ be a twice differentiable function, then $f$ is $\alpha$-smooth if and only if $\forall \xb \in \textmd{dom}(f)$, we have
+	We have a similar claim for smooth function as strongly convex function. That is, let $f$: dom($f$) $\to \R$ be a twice differentiable function, then $f$ is $\alpha$-smooth if and only if $\forall \xb \in \textmd{dom}(f)$, we have
 	\begin{equation*}
 		\nabla^2 f(\xb) - \alpha I \preceq 0.
 	\end{equation*}
@@ -242,7 +242,7 @@ Notice that although smooth seems to be contrary to strongly convex, a function 
 In this section, we will define Bregman Divergence and see its relation with convexity analysis.
 
 \begin{definition}
-	Given a function $f$: $\U \to \R$, we can define its Bregman Divergence as
+	Given a function $f$: $\K \to \R$, we can define its Bregman Divergence as
 	\begin{equation}
 		D_f(\xb, \yb) := f(\xb) - f(\yb) - \langle \nabla f(\yb), \xb - \yb \rangle.
 	\end{equation}
@@ -289,7 +289,7 @@ We will next talk about some facts about Bregman divergence.
 \end{claim}
 
 \begin{proof}
-	It can be seen that $ g_\xb(\theta) = \langle \xb, \theta \rangle - f(\xb)$ is a linear function. Linear function is convex. In addition, $f^*(\theta) = \sup\limits_{\xb\in \textmd{dom}(f)} g_\xb(\theta)$ is the supreme of convex function, which means that $f$ is also convex.  
+	It can be seen that $ g_\xb(\theta) = \langle \xb, \theta \rangle - f(\xb)$ is a linear function. Linear function is convex. In addition, $f^*(\theta) = \sup\limits_{\xb\in \textmd{dom}(f)} g_\xb(\theta)$ is the supremum of convex function, which means that $f$ is also convex.  
 \end{proof}
 
 \begin{example}
@@ -331,7 +331,7 @@ We will next talk about some facts about Bregman divergence.
 
 There is one famous inequality for Fenchel dual conjugate called Fenchel-Yang Inequality.
 
-\begin{theorem}[Fenchel-Yang Inequality]
+\begin{theorem}[\bfseries Fenchel-Yang Inequality]
 	$\forall \x \in \textmd{dom}(f)$ and $\forall \theta \in \textmd{dom}(f^*)$, it holds that 
 	\begin{equation}
 	f(\x) + f^*(\theta) \geq \langle \x, \theta \rangle.
